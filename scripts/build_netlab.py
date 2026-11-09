@@ -22,9 +22,11 @@ def main():
     if r.returncode or '0 error' not in r.stdout.lower():raise SystemExit('Network lab compilation failed')
     binary=next(d/'UTATNetLab.u' for d in (system,root/'System') if (d/'UTATNetLab.u').is_file())
     dist=REPO/'dist';dist.mkdir(exist_ok=True)
-    target=dist/'UTAT-network-lab-0.3.0.zip'
+    target=dist/'UTAT-network-lab-WIP.zip'
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED) as z:
         z.write(binary,'System/UTATNetLab.u')
         z.write(REPO/'docs'/'NETWORK_LAB.md','NETWORK_LAB.md')
+        z.write(REPO/'docs'/'WIP_SELECTABLE_PING.md','WIP_SELECTABLE_PING.md')
+        z.write(REPO/'docs'/'WIP_NETWORK_CHECKS.md','WIP_NETWORK_CHECKS.md')
     print('Built',target)
 if __name__=='__main__':main()

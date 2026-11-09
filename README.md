@@ -58,28 +58,31 @@ Use your normal mouse configuration. Change **DPI in your mouse software** and s
 
 Keep DPI, FOV, renderer and FPS conditions consistent when comparing settings. Optional `AimSensitivity`, `AimSave`, `AimProfile` and `AimRestore` console commands support temporary sensitivity/profile trials. They do not call the player's SaveConfig; the client menus and other mods can persist settings independently.
 
-## How to select latency in milliseconds
+## WIP: selectable latency + IGPlus
 
-**The normal training room is local. There is no in-game ping selector yet.** The separate experimental IGPlus lab uses a real localhost client/server and a UDP delay relay. Its runner takes the desired **additional round-trip delay** in `--rtt-ms`:
+**In development:** [implementation plan and contributor handoff](docs/WIP_SELECTABLE_PING.md). The normal 0.3.1 trainer does not yet include an in-game ping field.
 
-| Argument | Added outbound delay | Added inbound delay |
-| --- | --- | --- |
-| `--rtt-ms 0` | 0 ms | 0 ms |
-| `--rtt-ms 100` | 50 ms | 50 ms |
-| `--rtt-ms 150` | 75 ms | 75 ms |
+The external WIP launcher accepts **any integer added RTT from 0 to 2000 ms**, including 37, 85, 112 or 143; it is not limited to preset values. It starts a private localhost IGPlus client/server sandbox and leaves aiming/firing to you. Network rounds and accuracy scoring are pending.
 
-After setting up the repository, base mod and separate official IGPlus dependencies as described in [Network lab](docs/NETWORK_LAB.md):
+After building the base mod and WIP lab with the separate official IGPlus 11 dependencies:
 
 ```sh
-python scripts/net_smoke.py --ut-root "/path/to/UnrealTournament" --weapon Shock --rtt-ms 100
-python scripts/net_smoke.py --ut-root "/path/to/UnrealTournament" --weapon Sniper --rtt-ms 150
+python scripts/network_lab.py --ut-root "/path/to/UnrealTournament"
+# Or choose the exact value directly:
+python scripts/network_lab.py --ut-root "/path/to/UnrealTournament" --weapon Shock --rtt-ms 85
 ```
 
-This is an **automated developer experiment**, not a playable network training round: it measures eight RPC echoes and fires at a server target automatically. Changing this argument does not change the local room or guarantee an exact scoreboard ping. The measured RPC estimate varies with frames/ticks.
+The launcher asks for weapon and ms, records the validated request and opens the manual sandbox. Close UT and rerun to change the delay. It does not select a value inside the UT menu yet. [WIP package](downloads/UTAT-network-lab-WIP.zip?raw=true) · [Setup and pending work](docs/WIP_SELECTABLE_PING.md).
 
-Shock and Sniper were tested with 0, 100 and 150 ms added RTT. IGPlus 11's actual player/weapon classes confirmed server hits in all six cases. The normal-weapon `WeaponSettingsOldNet` profile was used. Matching a live server requires its exact IGPlus build and settings; NewNet behavior and anticheat compatibility are not implied.
+The value is **additional round-trip delay**, split equally between outbound/inbound traffic. An 85 ms request adds 42.5 ms each way; it does not guarantee an exact scoreboard ping. The WIP reports requested delay, a client-clock RPC estimate and server impact feedback separately. Impacts alone are not accuracy.
 
-[Optional compiled developer lab](downloads/UTAT-network-lab-0.3.0.zip?raw=true) · [Setup, evidence and limitations](docs/NETWORK_LAB.md). The lab remains at 0.3.0; build 0.3.1 adds the About panel to the local trainer. IGPlus binaries are a separate dependency and are not bundled.
+The automated developer runner remains available, for example:
+
+```sh
+python scripts/net_smoke.py --ut-root "/path/to/UnrealTournament" --weapon Sniper --rtt-ms 143
+```
+
+IGPlus 11's actual player/weapon classes are retained. The tested normal-weapon profile is `WeaponSettingsOldNet`. Matching a live server requires its exact build/settings; NewNet behavior and anticheat compatibility are not implied. [Earlier proof and dependency fingerprints](docs/NETWORK_LAB.md).
 
 ## About and project information
 

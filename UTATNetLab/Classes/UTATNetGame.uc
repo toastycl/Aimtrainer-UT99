@@ -2,9 +2,13 @@
 class UTATNetGame extends DeathMatchPlus;
 var UTATNetTarget NetTarget;
 var string LabWeapon;
+var bool ManualLab;
+var int RequestedRTT;
 function InitGame(string Options,out string Error)
 {
     Super.InitGame(Options,Error);
+    ManualLab=HasOption(Options,"ManualLab");
+    RequestedRTT=Clamp(GetIntOption(Options,"AddedRTT",100),0,2000);
     LabWeapon=ParseOption(Options,"LabWeapon");
     if(!(LabWeapon~="Sniper")) LabWeapon="Shock";
     InitialBots=0; MinPlayers=0; RemainingBots=0; bTournament=False;
@@ -32,6 +36,7 @@ function PostLogin(PlayerPawn P)
     P.SetLocation(vect(-1100,0,40)); P.ViewRotation=rot(0,0,0); P.SetRotation(P.ViewRotation);
     NetTarget=Spawn(class'UTATNetTarget',,,vect(0,0,40));
     Probe=Spawn(class'UTATNetProbe',P); Probe.NetTarget=NetTarget;
+    Probe.ManualLab=ManualLab; Probe.RequestedRTT=RequestedRTT;
     Log("NETLAB backend pawn="$P.Class$" weapon="$P.Weapon.Class);
 }
 defaultproperties

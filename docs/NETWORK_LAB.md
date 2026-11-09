@@ -1,4 +1,6 @@
-# IGPlus network laboratory — experimental
+# IGPlus network laboratory — original automated proof
+
+**Current WIP:** [Selectable latency + manual sandbox](WIP_SELECTABLE_PING.md) adds an external arbitrary-ms launcher and manual mode. The evidence below describes the earlier automated proof; in-game selection and network round accuracy remain pending.
 
 This is a separate automated proof for normal CTF weapons. It is **not yet a selectable training mode**: no network training rounds, in-game ping selector or network accuracy UI are included. The normal UTAT room remains standalone.
 

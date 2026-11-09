@@ -64,3 +64,5 @@ py scripts/net_smoke.py --ut-root "C:\Games\UnrealTournament" --weapon Sniper --
 ```
 
 La prueba dispara automáticamente y registra la estimación RTT y el impacto confirmado en servidor. Aún no es una ronda jugable con estadísticas de accuracy en red. Para entrenamiento normal instala únicamente el ZIP principal.
+
+El nuevo avance WIP agrega un lanzador externo interactivo para escribir cualquier valor entero de ms y abrir un sandbox manual con IGPlus. Aún no agrega ese selector al menú de UT ni calcula accuracy en red. Instrucciones y tareas para colaboradores: `docs/WIP_SELECTABLE_PING.md`.

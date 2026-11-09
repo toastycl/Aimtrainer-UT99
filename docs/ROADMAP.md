@@ -51,3 +51,15 @@ Online lab with server-confirmed hits, replication and netcode/anticheat compati
 - [x] Add in-game About / Credits with ToastyCL, UTC build date and project scope.
 - [x] Preserve setup selections when opening/closing About.
 - [x] Rewrite README with installation, usage, scoring and explicit latency-selection instructions.
+
+## WIP — arbitrary selectable latency + IGPlus
+
+Contributor handoff and acceptance criteria: [WIP_SELECTABLE_PING.md](WIP_SELECTABLE_PING.md).
+
+- [x] Accept arbitrary integer added RTT values, with shared validation/session manifest.
+- [x] External interactive launcher for Shock/Sniper and exact ms input.
+- [x] Manual sandbox path preserving IGPlus and leaving aiming/firing to the user.
+- [ ] Numeric latency field and environment selection inside UWindow.
+- [ ] Helper handshake, startup error recovery and cross-platform lifecycle acceptance.
+- [ ] Network round timer, target lifecycle, infinite ammo and valid accuracy accounting.
+- [ ] Replicated result HUD and fresh-fire replay flow.
