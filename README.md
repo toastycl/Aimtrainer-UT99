@@ -1,5 +1,7 @@
 # UT99 Aimtrainer
 
+> **0.4.0 delivery status:** implementation and native tests completed locally, but publication is blocked because the execution workspace became unavailable. The downloadable trainer below remains 0.3.1. [Progress, evidence and pending recovery](docs/DELIVERY_0.4.0_STATUS.md).
+
 A practice-room mod for **Unreal Tournament 99**, created by **ToastyCL** for the entire UT99 community. Choose a classic weapon, shoot static or moving characters, and compare your accuracy while trying your usual DPI, sensitivity and client input settings.
 
 **Current development build: 0.3.1 · 2026-11-09 (UTC).** Work in progress. [Validation and known limits](docs/VALIDATION.md).
