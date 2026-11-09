@@ -34,3 +34,14 @@ Online lab with server-confirmed hits, replication and netcode/anticheat compati
 - [x] Manual Finish, automatic timed result, replay and persistent result HUD.
 - [x] Run actual Linux viewport/UWindow callback integration with a 30-second round.
 - [ ] Verify the corrected flow manually on the tester's client and mouse hardware.
+
+## 0.3.0 — random spawns and result flow
+
+- [x] Random safe trainee starts and distinct random target respawns.
+- [x] Single Start control preserves weapon/duration through room travel.
+- [x] Finish over the world; fresh primary fire returns to selection without shooting.
+- [x] Real Linux client regression, including a 30-second timed round.
+- [x] Separate IGPlus 11 Shock/Sniper client/server proof with localhost UDP delay.
+- [ ] Integrate network lab selection, training rounds and accuracy accounting.
+- [ ] Match a tester's exact IGPlus version/configuration and validate manually.
+- [ ] Expose deterministic spawn seed replay for comparable sensitivity trials.

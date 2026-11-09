@@ -2,11 +2,11 @@
 
 A simple **practice-room mod for Unreal Tournament 99**, built for the whole community. Enter the room, choose a classic CTF weapon, shoot static or moving characters, see your accuracy, and play again using your normal mouse settings.
 
-**Version 0.2.1 — testing alpha.** This is a playable-mod implementation under validation, not a finished release. See [validation status](docs/VALIDATION.md) for the checks actually completed.
+**Version 0.3.0 — testing alpha.** This is a playable-mod implementation under validation, not a finished release. See [validation status](docs/VALIDATION.md) for the checks actually completed.
 
 ## Install
 
-[Download the compiled 0.2.1 test ZIP](downloads/UTAT-alpha-0.2.1.zip?raw=true) · [Checksums](downloads/SHA256SUMS)
+[Download the compiled 0.3.0 test ZIP](downloads/UTAT-alpha-0.3.0.zip?raw=true) · [Checksums](downloads/SHA256SUMS)
 
 Extract the compiled alpha ZIP into a **test copy of your UT99 469e installation**, preserving the folders:
 
@@ -18,19 +18,15 @@ Extract the compiled alpha ZIP into a **test copy of your UT99 469e installation
 
 The ZIP contains the compiled mod and real map. Python, a compiler and UnrealEd are not needed to install that ZIP. GitHub's **Download ZIP** contains source code, not the compiled game package.
 
-Open **Mods → UT99 Aimtrainer → Enter training room**, or enter this console command:
+Open **Mods → UT99 Aimtrainer**, choose your weapon, target behavior and duration, then press the single **Start training** button. It enters the room and keeps your selection. Inside the room, use the same button to replay; console fallback: `AimMenu`.
 
-```text
-open DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=?NumBots=0
-```
-
-In the room, open **Mods → UT99 Aimtrainer** (or console: `AimMenu`). Choose a weapon, target behavior and round duration, then **Start / Play again**. Timed rounds end automatically. Free practice ends when you choose **Finish and show score**. The result panel offers the same setup and replay controls.
+Timed rounds finish automatically. Results appear **over the world**. Press a fresh **primary fire** to return to the selector; this acknowledgement does not fire the weapon or change accuracy. Use **Finish round** / `AimFinish` to finish free practice or stop early.
 
 [Guía de instalación y uso en español](docs/QUICKSTART_ES.md)
 
 ## The room
 
-A small, flat rectangular room with neutral grid textures, one fixed start position and three human-shaped targets. Each round resets you to the start and recreates the targets. Targets have 100 health and respawn after elimination. The player has a separate staging/round start and targets have their own fixed origin. Combat bots inherited from DeathMatch settings are disabled.
+A small, flat rectangular room with neutral grid textures and three human-shaped targets. Each round picks a random safe trainee position. Targets have 100 health, pick separate random positions and respawn at a different random point after elimination. Spawn placement checks distance from the trainee, target spacing and line of sight. Combat bots inherited from DeathMatch settings are disabled.
 
 - **Static characters:** three stationary targets.
 - **Moving characters:** three targets following controlled lateral strafe paths.
@@ -39,9 +35,11 @@ A small, flat rectangular room with neutral grid textures, one fixed start posit
 
 This is a training game type with normal CTF weapons, not a Capture the Flag match. There are no flags to capture or attacking enemy AI.
 
-## Fixes in 0.2.1
+## Changes in 0.3.0
 
-Separate player/target starts; no inherited DM bots/warmup; true unlimited ammo; an independent round clock; explicit resume on Start; one reusable control window; and a persistent HUD fallback for results. Replace both System files **and** the map from the new ZIP.
+Random trainee/target starts and target respawns; one Start button preserving weapon selection across room entry; results shown over the room until a fresh primary fire press. Infinite ammo and the active-play round clock remain enabled. Replace both System files **and** the map.
+
+An optional [IGPlus network laboratory](docs/NETWORK_LAB.md) builds separately. It connects a real IGPlus 11 client/server, measures RPC round trips and fires actual Shock/Sniper weapons through a localhost UDP delay relay. It is an automated proof, not yet an integrated training mode or a promise of matching any particular live server.
 
 ## Weapons and accuracy
 
@@ -73,7 +71,7 @@ Optional console commands still allow temporary sensitivity tests (`AimSensitivi
 | `AimExercise 0` / `AimExercise 1` | Static / moving targets |
 | `AimDuration 60` | Timed round (10–300 seconds) |
 | `AimDuration 0` | Free practice |
-| `AimStart` | Start from the room's fixed position |
+| `AimStart` | Start at a random safe room position |
 | `AimFinish` | End and show score; an early timed finish is excluded from timed comparisons |
 | `AimRestart` | Cancel the current round and start again |
 | `AimStop` | Cancel and show current counters |
@@ -91,13 +89,13 @@ python scripts/build.py --ut-root "/path/to/UnrealTournament"
 py scripts/build.py --ut-root "C:\Games\UnrealTournament" --system System
 ```
 
-The builder compiles `UTAT.u`, imports/rebuilds the included `maps/DM-UTAT-Room.t3d` with UCC's editor commandlet and packages `dist/UTAT-alpha-0.2.1.zip`. The room uses unlit own grid textures, so it does not need GPU lightmap baking. The build writes separate compiler/editor ini files and stages mod source/output in the test installation; it does not edit User.ini or UnrealTournament.ini.
+The builder compiles `UTAT.u`, imports/rebuilds the included `maps/DM-UTAT-Room.t3d` with UCC's editor commandlet and packages `dist/UTAT-alpha-0.3.0.zip`. The room uses unlit own grid textures, so it does not need GPU lightmap baking. The build writes separate compiler/editor ini files and stages mod source/output in the test installation; it does not edit User.ini or UnrealTournament.ini.
 
 The reproducible room/texture generator is `scripts/create_room.py` (requires Pillow). Its generated T3D and PCX inputs are committed; ordinary builds do not need Pillow.
 
 ## Results and checks
 
-The in-game panel shows accuracy, emission counts and eliminations. A persistent result HUD remains visible after closing the menu. Ammunition is truly unlimited through custom ammo classes (stock HUD shows 999), including outside active rounds. To export retained game logs:
+The result HUD shows accuracy, emission counts and eliminations over the room until primary fire returns to selection. Ammunition is truly unlimited through custom ammo classes (stock HUD shows 999), including outside active rounds. To export retained game logs:
 
 ```sh
 python scripts/analyze.py "/path/to/UnrealTournament.log" --out results
@@ -108,7 +106,7 @@ python scripts/smoke.py --ut-root "/path/to/UnrealTournament"
 python scripts/client_smoke.py --ut-root "/path/to/UnrealTournament"
 ```
 
-`analyze.py` supports v1 and v2 records. Version 2 separates weapon/unit/scenario groups, supports free practice and does not invent a time-to-hit metric for continuous multi-target rounds. Logs can be overwritten when UT restarts: keep a copy. Backend is recorded as unverified. Keep DPI, FOV, renderer and FPS conditions consistent when comparing your settings. This is not a hardware latency measurement.
+`analyze.py` supports v1 and v2 records. Version 2 separates weapon/unit/scenario groups, supports free practice and does not invent a time-to-hit metric for continuous multi-target rounds. Logs can be overwritten when UT restarts: keep a copy. Local result records include the random spawn seed; replaying a seed from the menu is not implemented. Random placement varies difficulty, so compare multiple rounds. Input backend is recorded as unverified. Keep DPI, FOV, renderer and FPS conditions consistent when comparing your settings. This is not a hardware latency measurement.
 
 [Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Validation](docs/VALIDATION.md) · [Manual testing](docs/TESTING.md)
 

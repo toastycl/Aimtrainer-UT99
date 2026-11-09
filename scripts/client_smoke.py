@@ -4,6 +4,8 @@ Requires a complete UT installation, a built mod/map and a working renderer.
 """
 import argparse
 import os
+import re
+import shutil
 from pathlib import Path
 import subprocess
 ROOT=Path(__file__).resolve().parents[1]
@@ -23,7 +25,8 @@ def main():
     (system/'UTATClientCheck.ini').write_text(text,encoding='utf-8')
     env=os.environ.copy();env['LD_LIBRARY_PATH']=str(system)+os.pathsep+env.get('LD_LIBRARY_PATH','')
     if a.offscreen:env.update(SDL_VIDEODRIVER='offscreen',LIBGL_ALWAYS_SOFTWARE='1')
-    cmd=[str(game),'DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=?ClientTest=1','-ini=UTATClientCheck.ini','-userini=UTATClientCheckUser.ini','-nohomedir','-nosound','-windowed','-log','-unattended','-FORCELOGFLUSH']
+    shutil.copyfile(a.ut_root.resolve()/'Maps'/'DM-UTAT-Room.unr',a.ut_root.resolve()/'Maps'/'DM-UTAT-EntryCheck.unr')
+    cmd=[str(game),'DM-UTAT-EntryCheck?Game=UTAT.UTATGame?Mutator=?ClientTest=1','-ini=UTATClientCheck.ini','-userini=UTATClientCheckUser.ini','-nohomedir','-nosound','-windowed','-log','-unattended','-FORCELOGFLUSH']
     try:r=subprocess.run(cmd,cwd=system,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=90)
     except subprocess.TimeoutExpired:p.error('Client check timed out after 90 seconds')
     text=r.stdout.decode('utf-8',errors='replace')
@@ -31,7 +34,7 @@ def main():
     (folder/'client-console.log').write_text(text,encoding='utf-8')
     log=system/'UnrealTournament.log'
     if log.exists():(folder/'client-engine.log').write_bytes(log.read_bytes())
-    lines=[l.strip() for l in text.splitlines() if l.strip().startswith(('PASS ','FAIL ','DONE '))]
+    lines=[m.group(1) for l in text.splitlines() if (m:=re.search(r'(?:^|: )((?:PASS |FAIL |DONE ).*)$',l))]
     print('\n'.join(lines))
     if r.returncode or 'DONE failures=0' not in text or any(l.startswith('FAIL ') for l in lines):
         raise SystemExit('Standalone client test failed. See build/client-console.log')

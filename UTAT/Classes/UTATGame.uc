@@ -4,7 +4,9 @@ var UTATTarget Targets[3];
 var UTATShot ActiveShot;
 var UTATRoomInfo Room;
 var UTATRoundController RoundController;
-var float RoundElapsed;
+var float RoundElapsed, ResultsAt;
+var int RandomSeed, RoundSeed, PendingWeapon, PendingExercise, PendingSeconds;
+var bool AutoStart, ResultsDismissed, AutoStartCheck;
 var bool Running, HasResult, LastComplete;
 var int Shots, Hits, Eliminations, DamageDealt, RoundId, ExerciseMode, SessionDuration, WeaponIndex;
 var float StartedAt, LastElapsed, SessionFOV;
@@ -18,6 +20,12 @@ function InitGame(string Options, out string Error)
     Super.InitGame(Options, Error);
     SmokeTest = HasOption(Options, "SmokeTest");
     ClientTest = HasOption(Options, "ClientTest");
+    AutoStart=HasOption(Options,"AutoStart");
+    AutoStartCheck=HasOption(Options,"AutoStartCheck");
+    PendingWeapon=Clamp(GetIntOption(Options,"LabWeapon",0),0,5);
+    PendingExercise=Clamp(GetIntOption(Options,"LabExercise",0),0,1);
+    PendingSeconds=Clamp(GetIntOption(Options,"LabSeconds",60),0,300);
+    RandomSeed=Rand(65535)+1;
     // Global DeathMatch bot/tournament preferences must never populate the room.
     MinPlayers=0; InitialBots=0; RemainingBots=0;
     bTournament=False; bRatedGame=False; bRequireReady=False; bNetReady=False;
@@ -65,6 +73,7 @@ event PostLogin(PlayerPawn NewPlayer)
     if(UTATPlayer(NewPlayer)!=None)
     {
         Trainee=UTATPlayer(NewPlayer);
+        PlaceTrainee(Trainee);
         Trainee.ClientMessage("Practice room ready. Open Mods > UT99 Aimtrainer to start a round.");
     }
 }
@@ -128,12 +137,62 @@ function AddDefaultInventory(Pawn P)
 {
     if (UTATPlayer(P) == None) return;
     UTATPlayer(P).EnsureSettings();
+    if(AutoStart)
+    {
+        UTATPlayer(P).Settings.WeaponIndex=PendingWeapon;
+        UTATPlayer(P).Settings.Exercise=PendingExercise;
+        UTATPlayer(P).Settings.Duration=PendingSeconds;
+    }
     GiveTrainingWeapon(UTATPlayer(P), UTATPlayer(P).Settings.WeaponIndex);
 }
 function bool RestartPlayer(Pawn P)
 {
-    if (Running) FinishSession(False);
-    return Super.RestartPlayer(P);
+    local bool Result;
+    if(Running) FinishSession(False);
+    Result=Super.RestartPlayer(P);
+    if(Result && UTATPlayer(P)!=None) PlaceTrainee(UTATPlayer(P));
+    return Result;
+}
+function bool PlaceTrainee(UTATPlayer P)
+{
+    local int Attempt;
+    local vector Pos;
+    if(Room==None) return True;
+    for(Attempt=0; Attempt<32; Attempt++)
+    {
+        Pos=class'UTATSpawnPlanner'.static.InBox(RandomSeed,Room.PlayerSpawnMin,Room.PlayerSpawnMax);
+        if(VSize(Pos-P.Location)<160) continue;
+        if(P.SetLocation(Pos))
+        {
+            P.SetRotation(rotator(Room.TargetOrigin-Pos));
+            P.ViewRotation=P.Rotation;
+            P.Velocity=vect(0,0,0); P.Acceleration=vect(0,0,0);
+            return True;
+        }
+    }
+    return False;
+}
+function bool PlaceTarget(UTATTarget T, bool Respawning)
+{
+    local int Attempt,I;
+    local bool Clear;
+    local vector Pos;
+    if(Room==None) return False;
+    for(Attempt=0; Attempt<64; Attempt++)
+    {
+        Pos=class'UTATSpawnPlanner'.static.InBox(RandomSeed,Room.TargetSpawnMin,Room.TargetSpawnMax);
+        if(VSize(Pos-Trainee.Location)<700 || !FastTrace(Pos,Trainee.Location)) continue;
+        if(Respawning && VSize(Pos-T.HomePosition)<180) continue;
+        Clear=True;
+        for(I=0; I<3; I++)
+            if(Targets[I]!=None && Targets[I]!=T && VSize(Pos-Targets[I].HomePosition)<200) Clear=False;
+        if(!Clear || !T.SetLocation(Pos)) continue;
+        T.HomePosition=Pos; T.Health=100; T.bHidden=False;
+        T.SetCollision(True,False,False);
+        T.SetRotation(rotator(Trainee.Location-Pos));
+        return True;
+    }
+    return False;
 }
 function StartSession(UTATPlayer P)
 {
@@ -145,21 +204,14 @@ function StartSession(UTATPlayer P)
         LastSummary="Respawn first, then start a training round.";
         P.ClientMessage(LastSummary); return;
     }
+    if(Room==None) { P.ClientMessage("Use DM-UTAT-Room for training."); return; }
     P.EnsureSettings();
     Trainee=P;
     GiveTrainingWeapon(P,P.Settings.WeaponIndex);
     if (P.Weapon==None) return;
-    if (Room!=None)
-    {
-        if (!P.SetLocation(Room.Location))
-        {
-            P.ClientMessage("Start area blocked.");
-            return;
-        }
-        P.SetRotation(Room.Rotation);
-        P.ViewRotation=Room.Rotation;
-        P.Velocity=vect(0,0,0);
-    }
+    RoundSeed=Rand(65535)+1;
+    RandomSeed=RoundSeed;
+    if(!PlaceTrainee(P)) { P.ClientMessage("No safe player start available."); return; }
     Anchor=P.Location;
     AnchorRotation=P.ViewRotation;
     AnchorRotation.Pitch=0;
@@ -177,22 +229,16 @@ function StartSession(UTATPlayer P)
     SessionDuration=P.Settings.Duration;
     StartedAt=Level.TimeSeconds;
     RoundElapsed=0;
-    HasResult=False;
+    HasResult=False; ResultsDismissed=False;
     Running=True;
     for (I=0; I<3; I++)
     {
-        if(Room!=None) Pos=Room.TargetOrigin+(I-1)*240*SideAxis;
-        else Pos=Anchor+1100*ForwardAxis+(I-1)*240*SideAxis;
+        // Spawn hidden at the marker, then choose a collision-checked random location.
+        Pos=Room.TargetOrigin;
         Targets[I]=Spawn(class'UTATTarget',,,Pos,rotator(-ForwardAxis));
-        if (Targets[I]==None || !FastTrace(Pos,Anchor))
-        {
-            FinishSession(False);
-            P.ClientMessage("Target area blocked. Use the included training room.");
-            return;
-        }
-        Targets[I].Trainer=Self;
-        Targets[I].HomePosition=Pos;
-        Targets[I].Index=I;
+        if(Targets[I]==None) { FinishSession(False); return; }
+        Targets[I].Trainer=Self; Targets[I].Index=I;
+        if(!PlaceTarget(Targets[I],False)) { FinishSession(False); P.ClientMessage("No safe target spawn."); return; }
     }
     P.Health=100;
     P.SetPause(False);
@@ -242,9 +288,7 @@ function UpdateRound(float Delta)
         if (Targets[I]==None) { FinishSession(False); return; }
         if (Targets[I].bHidden && Level.TimeSeconds>=Targets[I].ReadyAt)
         {
-            Targets[I].Health=100;
-            Targets[I].bHidden=False;
-            Targets[I].SetCollision(True,False,False);
+            if(!PlaceTarget(Targets[I],True)) { FinishSession(False); return; }
         }
         Pos=Targets[I].HomePosition;
         if (ExerciseMode==1) Pos+=64*Sin(Age*2.0+I)*SideAxis;
@@ -267,7 +311,7 @@ function FinishSession(bool Complete)
     if (SessionDuration>0) LastElapsed=FMin(SessionDuration,LastElapsed);
     if(Complete && SessionDuration>0 && LastElapsed<SessionDuration) Complete=False;
     LastComplete=Complete;
-    HasResult=True;
+    HasResult=True; ResultsDismissed=False; ResultsAt=Level.TimeSeconds;
     ActiveShot=None;
     for (I=0; I<3; I++)
     {
@@ -278,7 +322,7 @@ function FinishSession(bool Complete)
         if (P.Instigator==Trainee) P.Destroy();
     Record="RESULT|version=2|complete="$Complete$"|exercise="$ExerciseMode
         $"|protocol=primary-units-v2|weapon="$WeaponLabel(WeaponIndex)$"|unit="$UnitLabel(WeaponIndex)
-        $"|sequence=1|duration="$SessionDuration$"|elapsed="$LastElapsed$"|shots="$Shots$"|hits="$Hits
+        $"|sequence=random-v1|seed="$RoundSeed$"|duration="$SessionDuration$"|elapsed="$LastElapsed$"|shots="$Shots$"|hits="$Hits
         $"|kills="$Eliminations$"|damage="$DamageDealt$"|mean_ms=0|map="$string(Level.Outer.Name)
         $"|anchor="$string(Anchor)$"|yaw="$AnchorRotation.Yaw$"|input=unverified|"$Snapshot;
     Log(Record,'UTAT');
@@ -288,7 +332,10 @@ function FinishSession(bool Complete)
         Trainee.Settings.LastResult=Record;
         Trainee.Settings.SaveConfig();
         Trainee.ClientMessage(LastSummary);
-        if (!SmokeTest) Trainee.ShowTrainingPanel();
+        Trainee.PendingTrainingPanel=False;
+        Trainee.bFire=0; Trainee.bAltFire=0;
+        if(Trainee.Weapon!=None) Trainee.Weapon.GotoState('Idle');
+        if(!SmokeTest) Trainee.ResumeTraining();
     }
 }
 defaultproperties

@@ -116,6 +116,31 @@ exec function AimDuration(int Seconds)
     }
 }
 
+// The first fresh shot after a result acknowledges it; it never reaches the weapon.
+exec function Fire(optional float F)
+{
+    local UTATGame G;
+    G=UTATGame(Level.Game);
+    if(G!=None && G.HasResult && !G.Running)
+    {
+        bFire=0;
+        if(Level.TimeSeconds-G.ResultsAt>=0.25)
+        {
+            G.ResultsDismissed=True;
+            ShowTrainingPanel();
+        }
+        return;
+    }
+    Super.Fire(F);
+}
+exec function AltFire(optional float F)
+{
+    if(UTATGame(Level.Game)!=None && UTATGame(Level.Game).HasResult && !UTATGame(Level.Game).Running)
+    {
+        bAltFire=0; return;
+    }
+    Super.AltFire(F);
+}
 exec function AimMenu()
 {
     ShowTrainingPanel();

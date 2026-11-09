@@ -19,7 +19,7 @@ simulated function PostRender(Canvas C)
     {
         C.DrawText("Mods > UT99 Aimtrainer or console: AimMenu");
         C.SetPos(20,64); C.DrawText(G.LastSummary);
-        if(G.HasResult)
+        if(G.HasResult && !G.ResultsDismissed)
         {
             BoxW=FMin(540,C.ClipX-40); BoxX=(C.ClipX-BoxW)/2; BoxY=C.ClipY*0.30;
             C.DrawColor.R=30; C.DrawColor.G=35; C.DrawColor.B=45;
@@ -31,7 +31,7 @@ simulated function PostRender(Canvas C)
             C.SetPos(BoxX+18,BoxY+78); C.DrawText("Hits / emitted units: "$G.Hits$" / "$G.Shots);
             C.SetPos(BoxX+18,BoxY+104); C.DrawText("Eliminations: "$G.Eliminations$" | Time: "$int(G.LastElapsed)$"s");
             C.SetPos(BoxX+18,BoxY+130); C.DrawText("Unit: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex));
-            C.SetPos(BoxX+18,BoxY+164); C.DrawText("AimRestart: replay | AimMenu: choose weapon / mode");
+            C.SetPos(BoxX+18,BoxY+164); C.DrawText("Press FIRE to choose your next weapon / exercise");
         }
         return;
     }

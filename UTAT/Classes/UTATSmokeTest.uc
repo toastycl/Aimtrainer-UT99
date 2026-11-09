@@ -39,11 +39,11 @@ function Timer()
             P.Settings.Exercise=0;
             G.StartSession(P);
             Check(G.Running && G.Targets[0]!=None && G.Targets[2]!=None,"round starts with three targets");
-            Check(VSize(P.Location-G.Targets[1].Location)>1300,"trainee and target starts are separated");
+            Check(VSize(P.Location-G.Targets[1].Location)>=700,"trainee and target starts are separated");
             Check(P.Weapon.AmmoType.UseAmmo(2000) && P.Weapon.AmmoType.AmmoAmount==999,"infinite ammo independent from round tick");
-            if(WeaponId==5) P.SetLocation(P.Location+1000*G.ForwardAxis);
-            else P.SetLocation(P.Location+600*G.ForwardAxis);
-            P.ViewRotation=rot(0,0,0);
+            if(WeaponId==5) P.SetLocation(G.Targets[1].Location-400*Normal(G.Targets[1].Location-P.Location));
+            else P.SetLocation(G.Targets[1].Location-600*Normal(G.Targets[1].Location-P.Location));
+            P.ViewRotation=rotator(G.Targets[1].Location-P.Location-P.EyeHeight*vect(0,0,1));
             P.Weapon.GotoState('Idle');
             P.Weapon.Fire(0);
         }

@@ -29,6 +29,7 @@ def parse_result(line):
     row.setdefault('unit','trace')
     row.setdefault('kills','0')
     row.setdefault('damage','0')
+    row.setdefault('seed','')
     values = {key:float(row[key]) for key in ('elapsed','shots','hits','mean_ms','duration','sens','threshold','fov','kills','damage')}
     if not all(math.isfinite(v) for v in values.values()):
         raise ValueError('Non-finite result')
@@ -73,7 +74,7 @@ def main():
     if not rows: p.error('No UTAT result records found')
     a.out.mkdir(parents=True,exist_ok=True)
     with (a.out/'sessions.csv').open('w',newline='',encoding='utf-8') as f:
-        writer=csv.DictWriter(f,fieldnames=list(REQUIRED)+['weapon','unit','kills','damage','accuracy_pct','hits_per_minute','time_to_hit_ms'])
+        writer=csv.DictWriter(f,fieldnames=list(REQUIRED)+['weapon','unit','kills','damage','seed','accuracy_pct','hits_per_minute','time_to_hit_ms'])
         writer.writeheader();writer.writerows({k:r[k] for k in writer.fieldnames} for r in rows)
     (a.out/'summary.json').write_text(json.dumps({'warning':'Input backend unverified; times are game-clock measurements, not hardware latency. Compare repeated sessions, not single rounds.','groups':summarize(rows)},indent=2),encoding='utf-8')
     print(f'Exported {len(rows)} sessions. Completed rounds only in summary.')

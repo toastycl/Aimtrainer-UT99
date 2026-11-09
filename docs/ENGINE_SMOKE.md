@@ -1,6 +1,6 @@
-# Engine regression evidence
+# 0.3.0 regression evidence
 
-Synthetic dedicated pawn has no live Player connection, so stock ClientFire can emit Player warnings. These checks do not render a client.
+Linux 469e dedicated engine. Real mod/map/weapon/session logic; synthetic trainee without a viewport. Does not validate physical input or rendering.
 
 ```text
 PASS room marker exists

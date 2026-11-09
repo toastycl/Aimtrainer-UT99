@@ -1,51 +1,49 @@
-# Aimtrainer UT99 0.2.1 — sala de práctica
+# Aimtrainer UT99 0.3.0 — sala de práctica
 
-## Instalar el ZIP compilado
+## Instalar
 
-Cierra el juego y usa una copia de prueba de tu UT99 con 469e. Extrae el ZIP conservando las carpetas:
+Cierra UT y extrae el ZIP compilado en una copia de prueba de UT99 469e. Reemplaza los tres archivos, incluido el mapa:
 
 - `System/UTAT.u` → `UnrealTournament/System/`
 - `System/UTAT.int` → `UnrealTournament/System/`
 - `Maps/DM-UTAT-Room.unr` → `UnrealTournament/Maps/`
 
-No necesitas Python ni UnrealEd para instalarlo. El ZIP de código fuente que descarga GitHub no contiene los binarios compilados.
+No necesitas Python ni UnrealEd. No borres User.ini ni UnrealTournament.ini. GitHub “Download ZIP” descarga fuentes; usa el ZIP compilado de `downloads/`.
 
-## Entrar y entrenar
+## Entrenar
 
-1. Abre **Mods → UT99 Aimtrainer → Enter training room**. Alternativa por consola: `open DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=?NumBots=0`.
-2. Dentro de la sala, abre **Mods → UT99 Aimtrainer**, o ejecuta `AimMenu`.
-3. Elige **arma**, **blancos estáticos o con strafe** y **30/60/120 segundos o práctica libre**.
-4. Pulsa **Start / Play again**. Empiezas desde el mismo punto frente a tres personajes de 100 HP que reaparecen al eliminarlos. Puedes moverte, saltar y hacer dodge.
-5. Al acabar el tiempo se abre el panel de resultados. En práctica libre usa **Finish and show score**, o `AimFinish`.
-6. Revisa accuracy, impactos/unidades disparadas y eliminaciones. Pulsa **Start / Play again** para repetir; puedes cambiar arma o ejercicio.
+1. Abre **Mods → UT99 Aimtrainer**.
+2. Selecciona arma, blancos estáticos o con strafe y 30/60/120 segundos o práctica libre.
+3. Pulsa **Start training**. Ese único botón entra a la sala e inicia con tu selección; dentro de la sala sirve para repetir.
+4. Dispara a tres personajes de 100 HP. Tienes munición infinita (HUD: 999). Puedes moverte, saltar y hacer dodge.
+5. Al cumplirse el tiempo aparecen los resultados **sobre la sala**, sin abrir el menú. En práctica libre abre `AimMenu` y pulsa **Finish round**, o ejecuta `AimFinish`.
+6. Revisa accuracy, impactos/unidades emitidas, eliminaciones y tiempo. **Presiona un nuevo disparo primario** para volver al selector. Ese clic no dispara el arma ni modifica el score. Un disparo que quedó mantenido al finalizar no debe saltarse el resultado.
 
-El mapa incluido es una habitación rectangular simple con suelo plano y texturas de cuadrícula propias. No tienes que buscar una zona en un mapa normal.
+Alternativa por consola: `open DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=?NumBots=0`, luego `AimMenu`.
 
-## Armas
+## Apariciones y tiempo
 
-- Shock: disparo primario.
-- Sniper: disparo primario y zoom.
+La sala es rectangular, plana y usa texturas de cuadrícula propias. El jugador inicia cada ronda en un punto aleatorio de su zona. Los blancos aparecen y reaparecen aleatoriamente en otra zona: se evita repetir el último punto y se comprueba distancia al jugador, separación entre blancos y línea de visión al aparecer. El jugador está protegido del daño y de telefrags; no hay bots de combate heredados de DeathMatch.
+
+Los blancos con strafe se desplazan lateralmente cerca de su punto aleatorio. No son oponentes con IA completa. El tiempo cuenta segundos reales de juego activo; abrir el menú pausa la ronda y Start la reanuda. `AimRestart` cancela y reinicia; `AimStop` cancela y muestra contadores. Terminar anticipadamente una ronda con tiempo no la incorpora a comparaciones de rondas completas.
+
+Las posiciones aleatorias hacen variar la dificultad: compara varias rondas con la misma arma y ejercicio. El registro guarda una semilla de posiciones; todavía no existe un control para repetir esa semilla desde el menú.
+
+## Armas y accuracy
+
+- Shock: primario.
+- Sniper: primario y zoom.
 - Minigun: ambos disparos.
 - Pulse: proyectiles primarios.
 - Rocket: cohetes primarios, incluyendo carga múltiple.
 - Flak: fragmentos primarios.
 
-Otros secundarios y armas quedan pendientes. El accuracy cuenta trazas/balas para hitscan, proyectiles para Pulse/Rocket y fragmentos para Flak. Un proyectil con daño de área cuenta una sola vez aunque dañe a varios blancos. El porcentaje de Flak es de fragmentos, no de cartuchos: compara siempre la misma arma y modalidad.
+Otros secundarios y armas quedan pendientes. Accuracy = unidades emitidas que dañaron a un blanco / unidades emitidas × 100. Una unidad es una traza/bala, un proyectil Pulse/Rocket o un fragmento Flak. El splash cuenta una sola vez por proyectil, aunque dañe varios blancos. Compara siempre la misma arma y modalidad; el accuracy Flak es por fragmentos, no por cartuchos.
 
-## Ajustes y repetición
+## Sensibilidad, input e IGPlus
 
-Usa tu configuración habitual. No necesitas perfiles. Ajusta DPI desde el mouse, sensibilidad/input desde el cliente y repite el ejercicio. El mod no cambia ni detecta DPI automáticamente.
+Usa tus ajustes habituales. Cambia DPI en el mouse y sensibilidad/input en el cliente, luego repite. El mod no detecta ni cambia DPI automáticamente. No exige perfiles.
 
-`AimRestart` reinicia la ronda; `AimStop` cancela. `AimFinish` muestra el resultado; si terminas antes del tiempo elegido, verás el score pero esa ronda no entra a la comparación de rondas completas. En práctica libre puedes terminar cuando quieras.
+Esta sala usa entrenamiento local. El laboratorio **IGPlus + latencia** es un paquete experimental separado para probar cliente y servidor reales, con Shock/Sniper y retardo UDP controlado; aún no tiene selector ni rondas de entrenamiento integradas. Consulta `docs/NETWORK_LAB.md`. Instalar este ZIP no activa IGPlus ni cambia servidores.
 
-La prueba visual/jugable del menú y del mouse en tu cliente sigue siendo necesaria. Consulta `docs/VALIDATION.md` para conocer las verificaciones exactas.
-
-## Correcciones 0.2.1
-
-Reemplaza **los tres archivos**, incluido el mapa, con UT cerrado. No hace falta borrar User.ini ni UnrealTournament.ini.
-
-El jugador aparece en un punto lateral de espera y al iniciar pasa a su línea de tiro. Los blancos tienen su propio origen, a distancia. Los bots de DeathMatch se bloquean aunque tu configuración normal tenga bots habilitados. El jugador está protegido del daño de práctica y de telefrags.
-
-La munición es infinita desde que recibes el arma; el HUD stock muestra 999. No depende de recargas ni del estado de la ronda.
-
-El tiempo seleccionado cuenta segundos reales de juego activo, ajustados por la velocidad de juego. Abrir el menú pausa la práctica; al iniciar o repetir se reanuda explícitamente. Al terminar se abre el panel de resultados. Al cerrar el menú quedan las estadísticas en el HUD. `AimFinish` y el botón “Finish and show score” finalizan por el mismo método.
+Verificaciones y límites: `docs/VALIDATION.md`. Sigue pendiente tu prueba visual/jugable con el mouse y sistema operativo habituales.
