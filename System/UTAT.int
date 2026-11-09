@@ -1,0 +1,6 @@
+[Public]
+Object=(Name=UTAT.UTATGame,Class=Class,MetaClass=Botpack.TournamentGameInfo)
+Object=(Name=UTAT.UTATMenuItem,Class=Class,MetaClass=UMenu.UMenuModMenuItem)
+
+[UTATGame]
+GameName="UT99 Aimtrainer (CTF Lab)"

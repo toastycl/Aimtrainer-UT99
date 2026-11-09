@@ -1,0 +1,27 @@
+import sys
+from pathlib import Path
+import unittest
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
+from analyze import parse_result, summarize
+from build import build_ini
+
+BASE='UTAT: RESULT|version=1|complete=True|protocol=shock-primary-v1|exercise=0|sequence=1|duration=60|elapsed=60|shots=10|hits=7|mean_ms=570|map=DM-Test|anchor=0,0,0|yaw=0|input=unverified|profile=0|sens=2|nosmooth=True|maxsmooth=False|threshold=0.07|fov=90'
+class Results(unittest.TestCase):
+    def test_metrics(self):
+        r=parse_result(BASE);self.assertEqual(r['accuracy_pct'],70);self.assertEqual(r['hits_per_minute'],7)
+    def test_no_hits_has_no_time(self):
+        r=parse_result(BASE.replace('shots=10|hits=7','shots=0|hits=0'))
+        self.assertEqual(r['accuracy_pct'],0);self.assertIsNone(r['time_to_hit_ms'])
+    def test_incomplete_excluded(self):
+        self.assertEqual(summarize([parse_result(BASE.replace('complete=True','complete=False'))]),[])
+    def test_reject_impossible_and_nonfinite(self):
+        for edit in [('hits=7','hits=11'),('elapsed=60','elapsed=nan'),('elapsed=60','elapsed=10'),('shots=10','shots=10.5')]:
+            with self.subTest(edit=edit),self.assertRaises(ValueError):parse_result(BASE.replace(*edit))
+    def test_separate_scenarios_and_configuration(self):
+        rows=[parse_result(s) for s in [BASE,BASE,BASE.replace('fov=90','fov=100'),BASE.replace('sens=2','sens=1.8'),BASE.replace('anchor=0,0,0','anchor=10,0,0')]]
+        groups=summarize(rows);self.assertEqual(len(groups),4);self.assertEqual(groups[0]['rounds'],2)
+    def test_unrelated_log_ignored(self):self.assertIsNone(parse_result('Log: RESULT|shots=0'))
+    def test_build_does_not_retain_unrelated_mods(self):
+        s=build_ini('[Editor.EditorEngine]\nEditPackages=OtherMod\nFoo=Bar\n')
+        self.assertNotIn('OtherMod',s);self.assertIn('EditPackages=UTAT',s);self.assertIn('Foo=Bar',s)
+if __name__=='__main__':unittest.main()
