@@ -1,8 +1,12 @@
-# 0.3.0 regression evidence
+# 0.3.1 client regression evidence
 
-Linux 469e, SDL offscreen / Mesa llvmpipe at 1280x720. Real viewport and UWindow callbacks, including travel from another map to the training room. No physical clicks or manual visual acceptance. Hostile inherited DM settings requested 8 bots and tournament readiness.
+Linux 469e, SDL offscreen / Mesa llvmpipe at 1280x720. Real viewport and UWindow callbacks. About was opened and closed both before and after room travel, retaining the selected Sniper and duration. No physical clicks or manual visual acceptance. Hostile inherited DM settings requested 8 bots and tournament readiness.
 
 ```text
+PASS About opens with ToastyCL credit and build information
+PASS closing About preserves selected weapon and duration
+PASS About opens with ToastyCL credit and build information
+PASS closing About preserves selected weapon and duration
 PASS one Start button keeps selected Sniper across room travel
 PASS selected duration survives room travel
 PASS real standalone viewport is active

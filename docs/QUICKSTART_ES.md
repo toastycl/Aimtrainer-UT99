@@ -1,4 +1,4 @@
-# Aimtrainer UT99 0.3.0 — sala de práctica
+# Aimtrainer UT99 0.3.1 — sala de práctica
 
 ## Instalar
 
@@ -47,3 +47,20 @@ Usa tus ajustes habituales. Cambia DPI en el mouse y sensibilidad/input en el cl
 Esta sala usa entrenamiento local. El laboratorio **IGPlus + latencia** es un paquete experimental separado para probar cliente y servidor reales, con Shock/Sniper y retardo UDP controlado; aún no tiene selector ni rondas de entrenamiento integradas. Consulta `docs/NETWORK_LAB.md`. Instalar este ZIP no activa IGPlus ni cambia servidores.
 
 Verificaciones y límites: `docs/VALIDATION.md`. Sigue pendiente tu prueba visual/jugable con el mouse y sistema operativo habituales.
+
+## About / Créditos
+
+En **Mods → UT99 Aimtrainer**, pulsa **About / Credits**. Muestra ToastyCL, la versión 0.3.1, la fecha 2026-11-09 (UTC), las funciones del entrenador y sus límites. **Back to training setup** regresa sin perder el arma o la duración seleccionadas.
+
+## Elegir los ms del laboratorio
+
+Todavía no se eligen desde el menú del juego. En el laboratorio de desarrollo, el argumento `--rtt-ms` añade retardo al recorrido de ida y vuelta. `100` añade 50 ms por dirección; `150`, 75 ms por dirección. No modifica el entrenamiento local.
+
+Con el repositorio y las dependencias del laboratorio preparados según `docs/NETWORK_LAB.md`, en Windows puedes usar:
+
+```text
+py scripts/net_smoke.py --ut-root "C:\Games\UnrealTournament" --weapon Shock --rtt-ms 100
+py scripts/net_smoke.py --ut-root "C:\Games\UnrealTournament" --weapon Sniper --rtt-ms 150
+```
+
+La prueba dispara automáticamente y registra la estimación RTT y el impacto confirmado en servidor. Aún no es una ronda jugable con estadísticas de accuracy en red. Para entrenamiento normal instala únicamente el ZIP principal.

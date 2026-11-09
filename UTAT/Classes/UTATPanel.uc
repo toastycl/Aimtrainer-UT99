@@ -1,6 +1,6 @@
 class UTATPanel extends UWindowDialogClientWindow;
 var UWindowComboControl WeaponControl, ExerciseControl, DurationControl;
-var UWindowSmallButton StartButton, FinishButton, CancelButton;
+var UWindowSmallButton StartButton, FinishButton, CancelButton, AboutButton;
 var bool Initializing;
 var UTATPlayer P;
 function UWindowComboControl AddChoice(float Y,string Caption)
@@ -39,6 +39,7 @@ function Created()
     StartButton=AddButton(16,194,392,"Start training");
     FinishButton=AddButton(16,236,190,"Finish round");
     CancelButton=AddButton(218,236,190,"Cancel round");
+    AboutButton=AddButton(16,344,392,"About / Credits");
     Initializing=False;
 }
 function Paint(Canvas C,float X,float Y)
@@ -72,6 +73,11 @@ function Notify(UWindowDialogControl C,byte E)
     Super.Notify(C,E); if(Initializing || E!=DE_Click) return;
     P=UTATPlayer(GetPlayerOwner());
     if(P!=None) G=UTATGame(P.Level.Game);
+    if(C==AboutButton)
+    {
+        Root.CreateWindow(class'UTATAboutWindow',60,60,440,390,,True);
+        return;
+    }
     if(C==StartButton)
     {
         if(G!=None && G.Running) return;

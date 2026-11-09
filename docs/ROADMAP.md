@@ -45,3 +45,9 @@ Online lab with server-confirmed hits, replication and netcode/anticheat compati
 - [ ] Integrate network lab selection, training rounds and accuracy accounting.
 - [ ] Match a tester's exact IGPlus version/configuration and validate manually.
 - [ ] Expose deterministic spawn seed replay for comparable sensitivity trials.
+
+## 0.3.1 — project information
+
+- [x] Add in-game About / Credits with ToastyCL, UTC build date and project scope.
+- [x] Preserve setup selections when opening/closing About.
+- [x] Rewrite README with installation, usage, scoring and explicit latency-selection instructions.

@@ -1,11 +1,12 @@
-# Validation status — 0.3.0
+# Validation status — 0.3.1
 
 | Check | Status |
 | --- | --- |
 | Python tools/geometry/UDP relay | 13 passing |
 | UnrealScript + real .unr rebuild | PASS — 0 errors, 0 warnings |
-| Dedicated-engine regressions | PASS — 52 assertions; ENGINE_SMOKE.md |
-| Real standalone viewport / UWindow callbacks | PASS — 22 assertions; CLIENT_SMOKE.md |
+| Dedicated-engine regressions | PASS — 52 assertions from 0.3.0 (unchanged gameplay logic); ENGINE_SMOKE.md |
+| Real standalone viewport / UWindow callbacks | PASS — 26 assertions; CLIENT_SMOKE.md |
+| About / Credits, close and selection retention | PASS before and after room travel |
 | Selected Sniper + duration across room travel | PASS |
 | Random safe player start and target respawn | PASS in real-client regression |
 | 30-second automatic end, world result, fresh-fire acknowledgement | PASS |

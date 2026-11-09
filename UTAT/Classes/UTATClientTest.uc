@@ -5,6 +5,8 @@ var UTATPlayer P;
 var WindowConsole WC;
 var UTATWindow W;
 var UTATPanel Panel;
+var UTATAboutWindow AboutWindow;
+var UTATAboutPanel AboutPanel;
 var int Stage, Failures, FinishedShots;
 var float Age;
 var vector PreviousAnchor, PreviousTarget;
@@ -32,6 +34,16 @@ function Tick(float Delta)
         if(WC.Root==None) { P.ShowTrainingPanel(); return; }
         P.ShowTrainingPanel(); FindPanel();
         if(Panel==None) { Check(False,"controls exist"); ConsoleCommand("exit"); return; }
+        Panel.WeaponControl.SetSelectedIndex(1); Panel.DurationControl.SetSelectedIndex(1);
+        Panel.Notify(Panel.AboutButton,Panel.DE_Click);
+        AboutWindow=UTATAboutWindow(WC.Root.FindChildWindow(class'UTATAboutWindow',True));
+        Check(AboutWindow!=None && class'UTATAboutInfo'.static.AuthorText()=="Created by ToastyCL","About opens with ToastyCL credit and build information");
+        if(AboutWindow!=None)
+        {
+            AboutPanel=UTATAboutPanel(AboutWindow.ClientArea);
+            AboutPanel.Notify(AboutPanel.CloseButton,AboutPanel.DE_Click);
+        }
+        Check(Panel.WeaponControl.GetSelectedIndex()==1 && Panel.DurationControl.GetSelectedIndex()==1,"closing About preserves selected weapon and duration");
         if(!(string(Level.Outer.Name)~="DM-UTAT-Room"))
         {
             Panel.WeaponControl.SetSelectedIndex(1); Panel.DurationControl.SetSelectedIndex(1);
