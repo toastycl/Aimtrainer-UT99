@@ -1,79 +1,106 @@
 class UTATPanel extends UWindowDialogClientWindow;
-var UWindowSmallButton ProfileButton, ApplyButton, SaveButton, LessButton, MoreButton;
-var UWindowSmallButton SmoothButton, ExerciseButton, DurationButton, StartButton, StopButton, RestoreButton;
+var UWindowComboControl WeaponControl, ExerciseControl, DurationControl;
+var UWindowSmallButton EnterButton, StartButton, FinishButton, CancelButton;
+var bool Initializing;
 var UTATPlayer P;
-var int Slot;
-
+function UWindowComboControl AddChoice(float Y, string Caption)
+{
+    local UWindowComboControl B;
+    B=UWindowComboControl(CreateControl(class'UWindowComboControl',16,Y,392,22));
+    B.SetText(Caption); B.SetEditable(False);
+    return B;
+}
 function UWindowSmallButton AddButton(float X, float Y, float W, string Caption)
 {
     local UWindowSmallButton B;
-    B = UWindowSmallButton(CreateControl(class'UWindowSmallButton', X, Y, W, 22));
-    B.SetText(Caption);
-    return B;
+    B=UWindowSmallButton(CreateControl(class'UWindowSmallButton',X,Y,W,24));
+    B.SetText(Caption); return B;
 }
 function Created()
 {
+    local int I;
     Super.Created();
-    ProfileButton = AddButton(16, 72, 116, "Slot 0 / A >");
-    ApplyButton = AddButton(144, 72, 116, "Apply slot");
-    SaveButton = AddButton(272, 72, 120, "Save to slot");
-    LessButton = AddButton(16, 108, 182, "Sensitivity - 0.10");
-    MoreButton = AddButton(210, 108, 182, "Sensitivity + 0.10");
-    SmoothButton = AddButton(16, 144, 376, "Toggle mouse smoothing");
-    ExerciseButton = AddButton(16, 180, 182, "Toggle Flick / Strafe");
-    DurationButton = AddButton(210, 180, 182, "Cycle 30 / 60 / 120 s");
-    StartButton = AddButton(16, 216, 182, "Start session");
-    StopButton = AddButton(210, 216, 182, "Cancel session");
-    RestoreButton = AddButton(16, 252, 376, "Restore original mouse settings");
+    Initializing=True;
+    P=UTATPlayer(GetPlayerOwner());
+    EnterButton=AddButton(16,48,392,"Enter training room");
+    WeaponControl=AddChoice(90,"Weapon");
+    for(I=0; I<6; I++) WeaponControl.AddItem(class'UTATGame'.static.WeaponLabel(I));
+    ExerciseControl=AddChoice(124,"Targets");
+    ExerciseControl.AddItem("Static characters");
+    ExerciseControl.AddItem("Moving / lateral strafe");
+    DurationControl=AddChoice(158,"Round");
+    DurationControl.AddItem("60 seconds"); DurationControl.AddItem("30 seconds");
+    DurationControl.AddItem("120 seconds"); DurationControl.AddItem("Free practice");
+    if(P!=None)
+    {
+        P.EnsureSettings();
+        WeaponControl.SetSelectedIndex(P.Settings.WeaponIndex);
+        ExerciseControl.SetSelectedIndex(P.Settings.Exercise);
+        if(P.Settings.Duration==0) DurationControl.SetSelectedIndex(3);
+        else if(P.Settings.Duration==30) DurationControl.SetSelectedIndex(1);
+        else if(P.Settings.Duration==120) DurationControl.SetSelectedIndex(2);
+        else DurationControl.SetSelectedIndex(0);
+    }
+    StartButton=AddButton(16,202,190,"Start / Play again");
+    FinishButton=AddButton(218,202,190,"Finish and show score");
+    CancelButton=AddButton(16,238,392,"Cancel round");
+    Initializing=False;
 }
-function Paint(Canvas C, float X, float Y)
+function Paint(Canvas C,float X,float Y)
 {
-    Super.Paint(C, X, Y);
-    P = UTATPlayer(GetPlayerOwner());
-    C.Font = Root.Fonts[F_Normal];
+    local UTATGame G;
+    Super.Paint(C,X,Y);
+    P=UTATPlayer(GetPlayerOwner());
+    C.Font=Root.Fonts[F_Normal];
     C.DrawColor.R=20; C.DrawColor.G=20; C.DrawColor.B=20;
-    ClipText(C, 16, 10, "CTF weapons lab / Shock primary alpha");
-    if (P == None)
+    ClipText(C,16,12,"UT99 AIMTRAINER / practice room");
+    if(P==None)
     {
-        ClipText(C, 16, 30, "Start a local UTATGame first (see README).");
+        ClipText(C,16,30,"Enter the room to choose a weapon and exercise.");
         return;
     }
-    P.EnsureSettings();
-    ClipText(C, 16, 30, "Sens "$P.MouseSensitivity$" | Smooth OFF: "$P.bNoMouseSmoothing);
-    ClipText(C, 16, 48, "Exercise "$P.Settings.Exercise$" | "$P.Settings.Duration$"s | Input: unverified");
-    ClipText(C, 16, 290, "Select slot > apply saved / save current settings.");
+    G=UTATGame(P.Level.Game);
+    if(G==None) return;
+    ClipText(C,16,30,"Use your normal mouse settings. No profile required.");
+    if(G.HasResult)
+    {
+        ClipText(C,16,280,"LAST ROUND / "$class'UTATGame'.static.WeaponLabel(G.WeaponIndex));
+        ClipText(C,16,300,"Accuracy: "$int(G.AccuracyPercent())$"% | "$G.Hits$" / "$G.Shots$" units");
+        ClipText(C,16,320,"Eliminations: "$G.Eliminations$" | Time: "$int(G.LastElapsed)$"s");
+        ClipText(C,16,340,"Unit: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex)$". Splash counted once per projectile.");
+        if(!G.LastComplete) ClipText(C,16,360,"Ended early / cancelled - no timed comparison.");
+    }
+    else ClipText(C,16,280,"Primary fire. Sniper zoom and Minigun alt are supported.");
 }
-function Notify(UWindowDialogControl C, byte E)
+function Notify(UWindowDialogControl C,byte E)
 {
-    Super.Notify(C, E);
-    if (E != DE_Click)
-        return;
-    P = UTATPlayer(GetPlayerOwner());
-    if (P == None)
-        return;
-    P.EnsureSettings();
-    if (C == ProfileButton)
+    local int Duration;
+    local UTATGame G;
+    Super.Notify(C,E);
+    if(Initializing || E!=DE_Click) return;
+    if(C==EnterButton)
     {
-        Slot = (Slot+1) % 3;
-        ProfileButton.SetText("Slot "$Slot$" >");
+        GetPlayerOwner().ClientTravel("DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=?NumBots=0",TRAVEL_Absolute,False);
+        ParentWindow.Close(); Root.Console.CloseUWindow(); return;
     }
-    else if (C == ApplyButton) P.AimProfile(Slot);
-    else if (C == SaveButton) P.AimSave(Slot);
-    else if (C == LessButton) P.AimSensitivity(FMax(0.01,P.MouseSensitivity-0.1));
-    else if (C == MoreButton) P.AimSensitivity(P.MouseSensitivity+0.1);
-    else if (C == SmoothButton) P.AimSmoothing();
-    else if (C == ExerciseButton) P.AimExercise(1-P.Settings.Exercise);
-    else if (C == DurationButton)
+    P=UTATPlayer(GetPlayerOwner());
+    if(P==None) return;
+    G=UTATGame(P.Level.Game);
+    if(C==StartButton)
     {
-        if (P.Settings.Duration == 30) P.AimDuration(60);
-        else if (P.Settings.Duration == 60) P.AimDuration(120);
-        else P.AimDuration(30);
+        if(G.Running) { P.ClientMessage("Finish or cancel the current round first."); return; }
+        P.AimWeapon(WeaponControl.GetSelectedIndex());
+        P.AimExercise(ExerciseControl.GetSelectedIndex());
+        switch(DurationControl.GetSelectedIndex())
+        {
+            case 1: Duration=30; break;
+            case 2: Duration=120; break;
+            case 3: Duration=0; break;
+            default: Duration=60;
+        }
+        P.AimDuration(Duration); P.AimStart();
+        ParentWindow.Close(); Root.Console.CloseUWindow();
     }
-    else if (C == StartButton)
-    {
-        P.AimStart();
-        Root.Console.CloseUWindow();
-    }
-    else if (C == StopButton) P.AimStop();
-    else if (C == RestoreButton) P.AimRestore();
+    else if(C==FinishButton) { ParentWindow.Close(); P.AimFinish(); }
+    else if(C==CancelButton) { ParentWindow.Close(); P.AimStop(); }
 }

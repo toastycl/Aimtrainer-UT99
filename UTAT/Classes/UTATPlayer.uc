@@ -11,7 +11,8 @@ function EnsureSettings()
     Settings = new(None) class'UTATStore';
     Settings.ActiveProfile = Clamp(Settings.ActiveProfile, 0, 2);
     Settings.Exercise = Clamp(Settings.Exercise, 0, 1);
-    Settings.Duration = Clamp(Settings.Duration, 10, 300);
+    Settings.Duration = Clamp(Settings.Duration, 0, 300);
+    Settings.WeaponIndex = Clamp(Settings.WeaponIndex, 0, 5);
     OriginalSensitivity = MouseSensitivity;
     OriginalNoSmoothing = bNoMouseSmoothing;
     OriginalMaxSmoothing = bMaxMouseSmoothing;
@@ -107,11 +108,41 @@ exec function AimExercise(int Mode)
 exec function AimDuration(int Seconds)
 {
     EnsureSettings();
-    if (CanConfigure() && Seconds >= 10 && Seconds <= 300)
+    if (CanConfigure() && (Seconds == 0 || Seconds >= 10) && Seconds <= 300)
     {
         Settings.Duration = Seconds;
         Settings.SaveConfig();
     }
+}
+
+exec function AimMenu()
+{
+    ShowTrainingPanel();
+}
+function ShowTrainingPanel()
+{
+    local WindowConsole WC;
+    if (Player == None) return;
+    WC=WindowConsole(Player.Console);
+    if(WC==None || WC.Root==None) return;
+    WC.LaunchUWindow();
+    WC.Root.CreateWindow(class'UTATWindow',40,40,440,420);
+}
+exec function AimWeapon(int Index)
+{
+    EnsureSettings();
+    if(CanConfigure() && Index>=0 && Index<=5)
+        UTATGame(Level.Game).GiveTrainingWeapon(Self,Index);
+}
+exec function AimFinish()
+{
+    if(UTATGame(Level.Game)!=None)
+        UTATGame(Level.Game).FinishSession(True);
+}
+exec function AimRestart()
+{
+    AimStop();
+    AimStart();
 }
 
 exec function AimStart()
@@ -154,7 +185,8 @@ exec function AimHelp()
 {
     ClientMessage("Mods > UT99 Aimtrainer opens the training panel.");
     ClientMessage("AimSave 0..2 | AimProfile 0..2 | AimSensitivity 1.8 | AimSmoothing");
-    ClientMessage("AimExercise 0=flick, 1=strafe | AimDuration 60 | AimStart | AimStop | AimRestore");
+    ClientMessage("AimWeapon 0..5 | AimExercise 0=static,1=strafe | AimDuration 0=free or 60");
+    ClientMessage("AimStart | AimFinish | AimRestart | AimStop | AimMenu");
 }
 
 event PreClientTravel()

@@ -53,9 +53,26 @@ def main():
         if run.returncode or binary is None or '0 error' not in output.lower():
             raise RuntimeError('Compilation did not report zero errors and produce UTAT.u. See build/compile.log')
         dist = REPO/'dist'; dist.mkdir(exist_ok=True)
-        target = dist/'UTAT-alpha-0.1.0.zip'
+        # Compile a real .unr from the included T3D source using UCC's editor commandlet.
+        (root/'Maps').mkdir(exist_ok=True)
+        room = root/'Maps'/'DM-UTAT-Room.unr'
+        map_ini = build_ini(defaults.read_text(encoding='utf-8-sig'))
+        if sys.platform != 'win32':
+            map_ini = map_ini.replace('WinDrv.WindowsClient', 'SDLDrv.SDLClient')
+        (system/'UTATMapBuild.ini').write_text(map_ini, encoding='utf-8')
+        commands = system/'UTATMapBuild.exec'
+        commands.write_text('MAP NEW\nMAP IMPORT FILE="'+str(REPO/'maps'/'DM-UTAT-Room.t3d')+'"\nMAP REBUILD\nMAP SAVE FILE="'+str(room)+'"\n', encoding='utf-8')
+        env.setdefault('SDL_VIDEODRIVER','dummy')
+        mapped = subprocess.run([str(compiler),'exec',str(commands),'-ini=UTATMapBuild.ini','-nohomedir','-silent','-nosound'], cwd=system, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        map_output=mapped.stdout.decode('utf-8',errors='replace')
+        (work/'map-build.log').write_text(map_output,encoding='utf-8')
+        print(map_output)
+        if mapped.returncode or not room.is_file() or '0 error' not in map_output.lower() or 'Polys: 6 -> 6' not in map_output:
+            raise RuntimeError('Training map did not build successfully. See build/map-build.log')
+        target = dist/'UTAT-alpha-0.2.0.zip'
         with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as z:
             z.write(binary, 'System/UTAT.u')
+            z.write(room, 'Maps/DM-UTAT-Room.unr')
             z.write(REPO/'System'/'UTAT.int', 'System/UTAT.int')
             z.write(REPO/'docs'/'QUICKSTART_ES.md', 'LEEME.md')
         print('Built',target)

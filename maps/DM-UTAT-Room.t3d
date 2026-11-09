@@ -1,0 +1,105 @@
+Begin Map
+Begin Actor Class=LevelInfo Name=LevelInfo0
+    Title="UT99 Aimtrainer - Simple Room"
+    Author="Aimtrainer UT99 contributors"
+    DefaultGameType=Class'UTAT.UTATGame'
+    AmbientBrightness=140
+End Actor
+Begin Actor Class=Brush Name=Brush0
+    Begin Brush Name=BuilderModel
+        Begin PolyList
+        End PolyList
+    End Brush
+    Brush=Model'BuilderModel'
+End Actor
+Begin Actor Class=Brush Name=TrainingRoom
+    CsgOper=CSG_Subtract
+    Begin Brush Name=RoomModel
+        Begin PolyList
+            Begin Polygon Texture=UTAT.TrainingFloor Flags=4194304 Link=0
+                Origin -01536.000000,-01024.000000,+00000.000000
+                Normal +00000.000000,+00000.000000,-00001.000000
+                TextureU +00001.000000,+00000.000000,+00000.000000
+                TextureV +00000.000000,+00001.000000,+00000.000000
+                Vertex -01536.000000,-01024.000000,+00000.000000
+                Vertex -01536.000000,+01024.000000,+00000.000000
+                Vertex +01536.000000,+01024.000000,+00000.000000
+                Vertex +01536.000000,-01024.000000,+00000.000000
+            End Polygon
+            Begin Polygon Texture=UTAT.TrainingWall Flags=4194304 Link=1
+                Origin +01536.000000,-01024.000000,+00768.000000
+                Normal +00000.000000,+00000.000000,+00001.000000
+                TextureU +00001.000000,+00000.000000,+00000.000000
+                TextureV +00000.000000,+00001.000000,+00000.000000
+                Vertex +01536.000000,-01024.000000,+00768.000000
+                Vertex +01536.000000,+01024.000000,+00768.000000
+                Vertex -01536.000000,+01024.000000,+00768.000000
+                Vertex -01536.000000,-01024.000000,+00768.000000
+            End Polygon
+            Begin Polygon Texture=UTAT.TrainingWall Flags=4194304 Link=2
+                Origin -01536.000000,-01024.000000,+00768.000000
+                Normal -00001.000000,+00000.000000,+00000.000000
+                TextureU +00000.000000,+00001.000000,+00000.000000
+                TextureV +00000.000000,+00000.000000,+00001.000000
+                Vertex -01536.000000,-01024.000000,+00768.000000
+                Vertex -01536.000000,+01024.000000,+00768.000000
+                Vertex -01536.000000,+01024.000000,+00000.000000
+                Vertex -01536.000000,-01024.000000,+00000.000000
+            End Polygon
+            Begin Polygon Texture=UTAT.TrainingWall Flags=4194304 Link=3
+                Origin +01536.000000,+01024.000000,+00768.000000
+                Normal +00001.000000,+00000.000000,+00000.000000
+                TextureU +00000.000000,+00001.000000,+00000.000000
+                TextureV +00000.000000,+00000.000000,+00001.000000
+                Vertex +01536.000000,+01024.000000,+00768.000000
+                Vertex +01536.000000,-01024.000000,+00768.000000
+                Vertex +01536.000000,-01024.000000,+00000.000000
+                Vertex +01536.000000,+01024.000000,+00000.000000
+            End Polygon
+            Begin Polygon Texture=UTAT.TrainingWall Flags=4194304 Link=4
+                Origin +01536.000000,-01024.000000,+00768.000000
+                Normal +00000.000000,-00001.000000,+00000.000000
+                TextureU +00001.000000,+00000.000000,+00000.000000
+                TextureV +00000.000000,+00000.000000,+00001.000000
+                Vertex +01536.000000,-01024.000000,+00768.000000
+                Vertex -01536.000000,-01024.000000,+00768.000000
+                Vertex -01536.000000,-01024.000000,+00000.000000
+                Vertex +01536.000000,-01024.000000,+00000.000000
+            End Polygon
+            Begin Polygon Texture=UTAT.TrainingWall Flags=4194304 Link=5
+                Origin -01536.000000,+01024.000000,+00768.000000
+                Normal +00000.000000,+00001.000000,+00000.000000
+                TextureU +00001.000000,+00000.000000,+00000.000000
+                TextureV +00000.000000,+00000.000000,+00001.000000
+                Vertex -01536.000000,+01024.000000,+00768.000000
+                Vertex +01536.000000,+01024.000000,+00768.000000
+                Vertex +01536.000000,+01024.000000,+00000.000000
+                Vertex -01536.000000,+01024.000000,+00000.000000
+            End Polygon
+        End PolyList
+    End Brush
+    Brush=Model'RoomModel'
+End Actor
+Begin Actor Class=PlayerStart Name=PlayerStart0
+    Location=(X=-1000,Y=0,Z=50)
+    Rotation=(Pitch=0,Yaw=0,Roll=0)
+End Actor
+Begin Actor Class=UTAT.UTATRoomInfo Name=RoomInfo0
+    Location=(X=-1000,Y=0,Z=40)
+End Actor
+Begin Actor Class=Light Name=Light0
+    Location=(X=-1100,Y=0,Z=600)
+    LightBrightness=200
+    LightRadius=64
+End Actor
+Begin Actor Class=Light Name=Light1
+    Location=(X=0,Y=0,Z=600)
+    LightBrightness=200
+    LightRadius=64
+End Actor
+Begin Actor Class=Light Name=Light2
+    Location=(X=1100,Y=0,Z=600)
+    LightBrightness=200
+    LightRadius=64
+End Actor
+End Map

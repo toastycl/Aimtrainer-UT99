@@ -1,23 +1,19 @@
-// Preserve stock primary fire, cadence and trace. Count traces, not button presses.
 class UTATShock extends ShockRifle;
-
 function TraceFire(float Accuracy)
 {
     local UTATGame G;
-    G = UTATGame(Level.Game);
-    if (G != None && Pawn(Owner) == G.Trainee)
-        G.RegisterShot();
+    local UTATShot Previous;
+    G=UTATGame(Level.Game);
+    if(G!=None)
+    {
+        Previous=G.ActiveShot;
+        G.ActiveShot=G.NewShot();
+    }
     Super.TraceFire(Accuracy);
+    if(G!=None) G.ActiveShot=Previous;
 }
-
-function AltFire(float Value)
-{
-    if (PlayerPawn(Owner) != None)
-        PlayerPawn(Owner).ClientMessage("This alpha measures Shock primary only. Combos are planned.");
-}
-
+function AltFire(float Value) { PlayerPawn(Owner).ClientMessage("Primary fire training only in this version."); }
 defaultproperties
 {
-    ItemName="Aimtrainer Shock Rifle"
     bCanThrow=False
 }

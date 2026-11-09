@@ -1,10 +1,10 @@
 class UTATMenuItem extends UMenuModMenuItem;
 function Execute()
 {
-    MenuItem.Owner.Root.CreateWindow(class'UTATWindow', 40, 40, 420, 350);
+    MenuItem.Owner.Root.CreateWindow(class'UTATWindow', 40, 40, 440, 420);
 }
 defaultproperties
 {
-    MenuCaption="Unreal Arena &Aimtrainer"
-    MenuHelp="Open the local CTF aim training panel."
+    MenuCaption="UT99 &Aimtrainer"
+    MenuHelp="Enter the training room or set up a practice round."
 }

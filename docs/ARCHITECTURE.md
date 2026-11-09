@@ -1,19 +1,15 @@
-# Architecture
+# Architecture — practice room
 
-The standalone UnrealScript package is named `UTAT`. It does not depend on a community/server brand.
+`UTATGame` runs a local room, not a settings wizard. `UTATRoomInfo` defines the start anchor. Each round resets the player, equips the selected weapon, creates three static/strafe `UTATTarget` Pawns and resets counters. Targets have 100 HP and respawn after elimination.
 
-| Class | Responsibility |
-| --- | --- |
-| UTATGame | Local-only login, lifecycle, target placement, counters and result records |
-| UTATPlayer | Commands, temporary mouse settings and restoration |
-| UTATStore | Separate profile configuration and last result in UTAT.ini |
-| UTATTarget | Controlled actor, stock Soldier mesh, standing-player-sized collision |
-| UTATShock | Stock primary trace with shot hook; alternate fire disabled for this protocol |
-| UTATHUD | Stock HUD plus lab counters |
-| UTATMenuItem / UTATWindow / UTATPanel | Native Mods-menu entry and panel |
+Six adapters inherit stock weapons. Hitscan adapters surround each stock TraceFire with a `UTATShot` token. `UTATProjectileNotify` replaces exact stock primary projectile classes with subclasses that preserve stock flight/damage functions. Initial velocity/acceleration/physics and instigator are preserved. SpawnNotify returns compatible subclasses so subsequent stock weapon setup (such as loaded-rocket fields) applies to the replacement.
 
-Targets are actors, not AI players. They do not reproduce every player hitbox detail or combat behavior. Flick locations use a fixed order without consuming global random state. Strafe position follows session time. There is a 250ms gap between targets.
+Each token belongs to a round and can count as a successful emission only once. Damage to multiple targets can increase damage/eliminations without increasing successful-emission count again. Round transitions clear tokens and remove pending player projectiles. Flak denominators count fragments, not shells.
 
-Sessions snapshot mouse settings, FOV, exercise, duration, map and anchor/yaw. Detected configuration changes or invalid placement cancel the run. The input backend is explicitly unverified. Device settings, frame timing, renderer and network effects are outside this protocol and must be controlled manually.
+The native UWindow panel is accessible from Mods even before entering the room. It provides room entry, weapon/exercise/duration selection, start/replay, finish and cancel. End-of-round results reopen the panel; detailed configuration profiles remain optional console commands.
 
-Each run emits `UTAT: RESULT|version=1|...`. The exporter excludes cancelled rounds, validates counters and separates scenarios/configurations. Time-to-hit includes reaction and aiming; it is not hardware latency. There are no native DLLs, external services, player accounts or automatic deployment. Online login is rejected until replication and server-confirmed metrics are implemented.
+The included T3D room is rebuilt to a real .unr by UCC exec. Own grid textures are imported into UTAT.u. Unlit polygons permit a deterministic headless build without renderer-dependent lightmaps. Original assets and the compiler are not repository content.
+
+Result schema v2 includes weapon, emission unit, eliminations and damage. The exporter supports legacy v1, separates weapon/scenario groups, and handles free practice. Continuous multi-target rounds do not claim a time-to-hit metric. Input backend and hardware latency are unverified.
+
+`UTATSmokeTest`, enabled only by explicit ?SmokeTest=1, exercises engine map/round/weapon behavior without a rendered client. It does not validate UWindow rendering, mouse feel or real player input. Online player login remains disabled.

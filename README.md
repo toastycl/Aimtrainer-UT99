@@ -1,100 +1,113 @@
 # Aimtrainer UT99
 
-An aim training mod for **Unreal Tournament 99**, designed for the whole UT community. Practice with classic weapons, compare mouse settings through repeatable exercises, and review your results.
+A simple **practice-room mod for Unreal Tournament 99**, built for the whole community. Enter the room, choose a classic CTF weapon, shoot static or moving characters, see your accuracy, and play again using your normal mouse settings.
 
-**Early development / source alpha.** This repository contains the first local training implementation. It is not a finished release. See [validation status](docs/VALIDATION.md) for exactly what has been checked.
+**Version 0.2.0 — testing alpha.** This is a playable-mod implementation under validation, not a finished release. See [validation status](docs/VALIDATION.md) for the checks actually completed.
 
-## First milestone
+## Install
 
-- Local, single-player training game type with a stock Shock Rifle primary-fire adapter.
-- Fixed-sequence flick targets and a target following a controlled lateral strafe path.
-- Three saved profiles containing sensitivity and mouse smoothing settings.
-- Training panel in the **Mods** menu, plus console commands.
-- HUD counters for time, shots, hits and accuracy.
-- Completed/cancelled session records in the game log and a Python CSV/JSON exporter.
-- Temporary mouse adjustments through the training commands, with an original-settings restore command.
+[Download the compiled 0.2.0 test ZIP](downloads/UTAT-alpha-0.2.0.zip?raw=true) · [Checksums](downloads/SHA256SUMS)
 
-The focus is **normal-weapon CTF aim**, not InstaGib. The lab runs as its own game type; it is not a playable Capture the Flag match.
+Extract the compiled alpha ZIP into a **test copy of your UT99 469e installation**, preserving the folders:
 
-## Planned
+| File | Destination |
+| --- | --- |
+| `UTAT.u` | `UnrealTournament/System/` |
+| `UTAT.int` | `UnrealTournament/System/` |
+| `DM-UTAT-Room.unr` | `UnrealTournament/Maps/` |
 
-Sniper exercises, true continuous tracking with Pulse/Minigun, Shock combos, projectile prediction, a dedicated training map, in-game comparison history, input-backend detection and restart-aware switching, and eventually online validation.
+The ZIP contains the compiled mod and real map. Python, a compiler and UnrealEd are not needed to install that ZIP. GitHub's **Download ZIP** contains source code, not the compiled game package.
 
-**Raw Input / DirectInput / Cursor switching is not implemented in this alpha.** Select the backend through the client's own settings. Records explicitly mark the backend as `unverified`. Do not interpret a sensitivity profile as proof of the active input method.
-
-## Build and try it
-
-Use a separate, complete UT99 installation with the OldUnreal 469e toolchain for the initial build. The game itself and its original assets are not included.
-
-```sh
-python scripts/build.py --ut-root "/path/to/UnrealTournament"
-```
-
-On Windows, for example:
-
-```powershell
-py scripts/build.py --ut-root "C:\Games\UnrealTournament" --system System
-```
-
-The script stages `UTAT/Classes`, generates a separate compiler ini, invokes UCC and creates `dist/UTAT-alpha-0.1.0.zip` only after successful compilation. It does not edit `User.ini` or `UnrealTournament.ini`. It does place the compiled package in the test installation, so close UT before building.
-
-Copy `System/UTAT.u` from the build and `System/UTAT.int` from this repository into the test game's `System` directory. Open the console and launch a map you already own, for example:
+Open **Mods → UT99 Aimtrainer → Enter training room**, or enter this console command:
 
 ```text
-open DM-Deck16][?Game=UTAT.UTATGame?Mutator=?NumBots=0
+open DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=?NumBots=0
 ```
 
-Move to a clear, flat area and face an unobstructed lane. The alpha creates its targets about 700 Unreal units ahead. If it cannot place a target it cancels the run rather than silently recording an invalid exercise. A dedicated arena is still planned.
+In the room, open **Mods → UT99 Aimtrainer** (or console: `AimMenu`). Choose a weapon, target behavior and round duration, then **Start / Play again**. Timed rounds end automatically. Free practice ends when you choose **Finish and show score**. The result panel offers the same setup and replay controls.
 
-Open **Mods > UT99 Aimtrainer**, or use `AimHelp` in the console. The initial menu uses UT's native UWindow controls; the polished concept UI is a design target, not the current implementation.
+[Guía de instalación y uso en español](docs/QUICKSTART_ES.md)
 
-See [the Spanish quick start](docs/QUICKSTART_ES.md) and [manual acceptance tests](docs/TESTING.md).
+## The room
 
-## Console commands
+A small, flat rectangular room with neutral grid textures, one fixed start position and three human-shaped targets. Each round resets you to the start and recreates the targets. Targets have 100 health and respawn after elimination.
+
+- **Static characters:** three stationary targets.
+- **Moving characters:** three targets following controlled lateral strafe paths.
+- **30 / 60 / 120 seconds** or **free practice**.
+- You can move, jump and dodge using UT99 movement.
+
+This is a training game type with normal CTF weapons, not a Capture the Flag match. There are no flags to capture or attacking enemy AI.
+
+## Weapons and accuracy
+
+| Weapon | Supported fire | Accuracy unit |
+| --- | --- | --- |
+| Shock Rifle | Primary | One emitted trace |
+| Sniper Rifle | Primary; secondary zoom | One emitted trace |
+| Minigun | Primary and secondary | One emitted trace/bullet |
+| Pulse Gun | Primary projectiles | One plasma projectile |
+| Rocket Launcher | Primary, including loaded rockets | One rocket |
+| Flak Cannon | Primary fragments | One fragment, not one shell |
+
+**Accuracy = emission units that damaged a target / emission units fired × 100.** A projectile damaging multiple targets through splash counts only once as a successful unit. Multiple Flak fragments are counted individually, so the percentage cannot exceed 100%. Eliminations and useful target damage are recorded separately. Compare the same weapon/fire mode/exercise across runs; the Flak percentage is not shell accuracy.
+
+Shock combos, Pulse beam, Flak shells, Rocket grenades and the remaining UT weapons are not implemented yet. Targets use the stock Soldier mesh and a standing Pawn collision cylinder. They are controlled training characters, not complete AI opponents. Sniper uses its stock head/body damage logic against them.
+
+## Mouse configuration
+
+Use the DPI, sensitivity and input backend you normally use. **Profiles are optional and are not the main training flow.** Change DPI in your mouse software and input/sensitivity in the client, then replay the same exercise. The mod does not detect or switch hardware DPI or verify Raw Input/DirectInput.
+
+Optional console commands still allow temporary sensitivity tests (`AimSensitivity 1.8`), saving slots (`AimSave 0..2`), applying them (`AimProfile 0..2`) and restoration (`AimRestore`). These commands do not call the player's SaveConfig. Original client menus and other mods may persist settings independently. Use a test installation and retain your original ini files.
+
+## Console controls
 
 | Command | Purpose |
 | --- | --- |
-| `AimSave 0` | Save current mouse settings in slot 0 (slots 0–2) |
-| `AimProfile 0` | Apply a saved slot for this training visit |
-| `AimSensitivity 1.8` | Change training sensitivity in memory |
-| `AimSmoothing` | Toggle smoothing; disable maximum smoothing |
-| `AimExercise 0` | Choose fixed-sequence flicks; use `1` for strafe |
-| `AimDuration 60` | Set a run to 10–300 seconds |
-| `AimStart` | Anchor the exercise at your current position and start |
-| `AimStop` | Cancel a run; cancelled runs do not enter summaries |
-| `AimRestore` | Restore the mouse settings captured on first use |
-| `AimInput` | Explain the current input-backend limitation |
-| `AimHelp` | Show command help |
+| `AimMenu` | Open the training/result panel |
+| `AimWeapon 0..5` | Shock, Sniper, Minigun, Pulse, Rocket, Flak |
+| `AimExercise 0` / `AimExercise 1` | Static / moving targets |
+| `AimDuration 60` | Timed round (10–300 seconds) |
+| `AimDuration 0` | Free practice |
+| `AimStart` | Start from the room's fixed position |
+| `AimFinish` | End and show score; an early timed finish is excluded from timed comparisons |
+| `AimRestart` | Cancel the current round and start again |
+| `AimStop` | Cancel and show current counters |
+| `AimHelp` | Command help |
 
-Profile settings are saved in `UTAT.ini`. The training commands do not call the player's `SaveConfig`. Avoid changing settings through stock menus or other mods during a run: those components may independently persist user settings. FOV or mouse-setting changes detected mid-run cancel the run.
+Pending projectiles are removed between rounds. Old-round shot tokens cannot score in a new round. A cancelled/early-ended timed round still shows its accuracy, but is excluded from completed-round summaries.
 
-## Review sessions
+## Build from source
 
-Keep a copy of your test game's log before launching UT again (the game may overwrite it).
+Use Python 3.10+ and a complete UT99 installation with the **OldUnreal 469e** compiler. Original game assets/toolchain are local dependencies and are not redistributed here.
+
+```sh
+python scripts/build.py --ut-root "/path/to/UnrealTournament"
+# Windows:
+py scripts/build.py --ut-root "C:\Games\UnrealTournament" --system System
+```
+
+The builder compiles `UTAT.u`, imports/rebuilds the included `maps/DM-UTAT-Room.t3d` with UCC's editor commandlet and packages `dist/UTAT-alpha-0.2.0.zip`. The room uses unlit own grid textures, so it does not need GPU lightmap baking. The build writes separate compiler/editor ini files and stages mod source/output in the test installation; it does not edit User.ini or UnrealTournament.ini.
+
+The reproducible room/texture generator is `scripts/create_room.py` (requires Pillow). Its generated T3D and PCX inputs are committed; ordinary builds do not need Pillow.
+
+## Results and checks
+
+The in-game panel shows accuracy, emission counts and eliminations. To export retained game logs:
 
 ```sh
 python scripts/analyze.py "/path/to/UnrealTournament.log" --out results
-```
-
-The exporter produces `sessions.csv` and `summary.json`. Summaries include only completed rounds, keep different maps/anchors/FOV/protocols separate, and report accuracy, hits per minute and mean time until a hit. Run several rounds per configuration and alternate the order of profiles. No-hit rounds have no time-to-hit value; they are not reported as zero-ms performance.
-
-Times are measured on the **game clock**, including reaction and aiming. They are not measurements of physical input latency. FPS, renderer, operating system, DPI, polling rate and the actual backend are not yet captured automatically: keep these constant and record them separately.
-
-## Development
-
-```sh
 python -m unittest discover -s tests -v
-python -m compileall -q scripts
+# Optional engine checks after building (no rendered client):
+python scripts/smoke.py --ut-root "/path/to/UnrealTournament"
 ```
 
-CI runs the Python tooling checks. UCC compilation and in-game acceptance are separate checks and must be reported separately. There is no automatic server deployment.
+`analyze.py` supports v1 and v2 records. Version 2 separates weapon/unit/scenario groups, supports free practice and does not invent a time-to-hit metric for continuous multi-target rounds. Logs can be overwritten when UT restarts: keep a copy. Backend is recorded as unverified. Keep DPI, FOV, renderer and FPS conditions consistent when comparing your settings. This is not a hardware latency measurement.
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Validation](docs/VALIDATION.md)
+[Architecture](docs/ARCHITECTURE.md) · [Roadmap](docs/ROADMAP.md) · [Validation](docs/VALIDATION.md) · [Manual testing](docs/TESTING.md)
 
 ## Contributions and rights
 
-Feedback, reproducible bug reports and discussion are welcome. Include your client version, operating system and exact reproduction steps. Do not upload private configuration files or game assets.
+Feedback and reproducible bug reports are welcome. Include client version, OS, weapon, exercise and reproduction steps. Do not commit original game binaries/assets, private ini files or personal logs. The included map, grid textures and mod source are project content.
 
-A project source license has not been selected yet. A public repository alone does not grant an open-source license. Unreal Tournament and its original assets belong to their respective rights holders; this repository does not redistribute them.
+A source license has not been selected yet. Public visibility alone is not an open-source license. Unreal Tournament and its original assets belong to their respective rights holders. There is no automatic server deployment.

@@ -1,16 +1,14 @@
-# Manual acceptance
+# Manual client acceptance
 
-Python tests check tooling, not UnrealScript gameplay. Use a complete clean test installation.
+1. Install UTAT.u + UTAT.int in System and DM-UTAT-Room.unr in Maps on a test UT99 469e client.
+2. Open Mods → UT99 Aimtrainer from the main menu, enter the room and reopen the panel. Check readable/non-overlapping controls at 1024x768 and 1920x1080.
+3. Choose each weapon in turn. Verify primary timing/spread/physics, Sniper zoom and Minigun secondary. Other secondary modes should be explicitly unavailable.
+4. Run static and moving exercises. Confirm three visible, human-shaped targets remain inside the room and respawn with 100 HP. Check head/body Sniper damage.
+5. Deliberately hit and miss. Compare traces, Pulse projectiles, loaded rockets and Flak fragments against displayed denominators. One splash projectile damaging several targets must count as one successful emission. Accuracy must remain ≤100%.
+6. Complete a timed round: results must appear automatically. Finish free practice manually: results must appear. Start again: same start, new targets, zeroed counters and no leftover projectiles.
+7. Finish a timed round early/cancel: show score but exclude it from completed summaries. Test zero-shot, no-hit and immediate-finish rounds.
+8. Change DPI/sensitivity through normal settings between rounds. Verify no mandatory profile or automatic DPI/input switch. Test original-setting restoration if using optional profile commands.
+9. Export retained logs, verify separate weapons/units/scenarios and legacy v1 compatibility.
+10. Confirm settings, bindings and normal gameplay after leaving the map and restarting the client.
 
-1. Compile with UCC: zero errors, inspect warnings. Install UTAT.u and UTAT.int.
-2. Launch UTATGame on a stock map. Confirm custom player, Shock-only loadout and Mods entry.
-3. Check panel readability at 1024x768 and 1920x1080. Verify separate slot selection/apply/save.
-4. Record original sensitivity and smoothing flags/threshold. Save A, change/save B and alternate A/B. Check restoration after command, map travel, normal quit and relaunch.
-5. Run 10-second flicks. Deliberately hit/miss. Confirm one shot per trace, one hit per target, and no scored alt-fire.
-6. Run strafe. Verify consistent lateral motion, visible skin, collision, no floor/wall clipping and no hits while hidden.
-7. Cancel, die or change FOV/mouse settings during a run. Each run must end incomplete and be excluded from comparisons.
-8. Start facing a wall or in a narrow lane. Expect explicit cancellation, never a run without a valid target.
-9. Export complete/no-shot/no-hit/incomplete sessions. Compare same anchor/yaw against different starts; different scenarios must remain separate.
-10. Attempt listen/dedicated login in a test environment. Expect explicit local-only rejection.
-
-Keep backend, FOV, DPI, polling rate, FPS, renderer and game speed constant. The alpha cannot detect all external changes. Report exact client/OS/version and reproduction steps for failures. Do not recommend daily use until restoration and runtime behavior pass.
+The opt-in dedicated-engine smoke harness tests real map/weapon/score logic without a rendered client. It is not proof of menu rendering or mouse behavior. Do not recommend daily use until the above acceptance checks pass.

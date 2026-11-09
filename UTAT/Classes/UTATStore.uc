@@ -12,6 +12,7 @@ struct AimProfile
 var config AimProfile Profiles[3];
 var config int ActiveProfile;
 var config int Exercise; // 0 flick, 1 strafe
+var config int WeaponIndex;
 var config int Duration;
 var config string LastResult;
 

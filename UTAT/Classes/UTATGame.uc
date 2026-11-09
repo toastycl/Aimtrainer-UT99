@@ -1,254 +1,257 @@
 class UTATGame extends DeathMatchPlus;
-
 var UTATPlayer Trainee;
-var UTATTarget TrainingTarget;
-var bool Running, WaitingTarget;
-var int Shots, Hits, TargetIndex, ExerciseMode, SessionDuration;
-var float StartedAt, ExposedAt, NextTargetAt, HitTimeSum, SessionFOV;
-var vector Anchor, ForwardAxis, SideAxis, TargetCenter;
+var UTATTarget Targets[3];
+var UTATShot ActiveShot;
+var UTATRoomInfo Room;
+var bool Running, HasResult, LastComplete;
+var int Shots, Hits, Eliminations, DamageDealt, RoundId, ExerciseMode, SessionDuration, WeaponIndex;
+var float StartedAt, LastElapsed, SessionFOV;
+var vector Anchor, ForwardAxis, SideAxis;
 var rotator AnchorRotation;
 var string Snapshot, LastSummary;
+var bool SmokeTest;
 
-// Explicitly force our player so inherited client preferences cannot bypass commands.
-event PlayerPawn Login(string Portal, string Options, out string Error,
-                       class<PlayerPawn> SpawnClass)
+function InitGame(string Options, out string Error)
+{
+    Super.InitGame(Options, Error);
+    SmokeTest = HasOption(Options, "SmokeTest");
+}
+event PlayerPawn Login(string Portal, string Options, out string Error, class<PlayerPawn> SpawnClass)
 {
     if (Level.NetMode != NM_Standalone)
     {
-        Error = "UTAT alpha is local-only. Online support is not implemented.";
+        Error = "Aimtrainer is local-only in this version.";
         return None;
     }
     return Super.Login(Portal, Options, Error, class'UTATPlayer');
 }
-
 function PostBeginPlay()
 {
     local Inventory I;
     Super.PostBeginPlay();
-    // Keep existing maps usable as labs without map pickups changing the loadout.
     foreach AllActors(class'Inventory', I)
-        if (I.Owner == None)
-            I.Destroy();
+        if (I.Owner == None) I.Destroy();
+    foreach AllActors(class'UTATRoomInfo', Room) break;
+    Spawn(class'UTATProjectileNotify');
+    if (SmokeTest) Spawn(class'UTATSmokeTest');
 }
-
-function AddDefaultInventory(Pawn P)
+static function string WeaponLabel(int Index)
 {
-    local UTATShock W;
-    W = Spawn(class'UTATShock');
-    if (W == None)
-        return;
+    switch(Index)
+    {
+        case 0: return "Shock Rifle";
+        case 1: return "Sniper Rifle";
+        case 2: return "Minigun";
+        case 3: return "Pulse Gun";
+        case 4: return "Rocket Launcher";
+        case 5: return "Flak Cannon";
+    }
+    return "Unknown";
+}
+static function string UnitLabel(int Index)
+{
+    if (Index == 5) return "fragment";
+    if (Index >= 3) return "projectile";
+    return "trace";
+}
+function GiveTrainingWeapon(UTATPlayer P, int Index)
+{
+    local Inventory I, N;
+    local Weapon W;
+    local class<Weapon> WC;
+    if (Running || P == None) return;
+    Index = Clamp(Index,0,5);
+    for (I=P.Inventory; I!=None; I=N)
+    {
+        N=I.Inventory;
+        P.DeleteInventory(I);
+        I.Destroy();
+    }
+    P.Weapon=None;
+    P.PendingWeapon=None;
+    switch(Index)
+    {
+        case 0: WC=class'UTATShock'; break;
+        case 1: WC=class'UTATSniper'; break;
+        case 2: WC=class'UTATMinigun'; break;
+        case 3: WC=class'UTATPulse'; break;
+        case 4: WC=class'UTATRocketLauncher'; break;
+        case 5: WC=class'UTATFlak'; break;
+    }
+    W=Spawn(WC);
+    if (W == None) return;
     W.GiveTo(P);
     W.GiveAmmo(P);
     W.SetSwitchPriority(P);
     W.WeaponSet(P);
-    P.Weapon = W;
-    W.SetHand(PlayerPawn(P).Handedness);
+    P.Weapon=W;
+    W.SetHand(P.Handedness);
+    W.BringUp();
+    P.Settings.WeaponIndex=Index;
+    P.Settings.SaveConfig();
 }
-
+function AddDefaultInventory(Pawn P)
+{
+    if (UTATPlayer(P) == None) return;
+    UTATPlayer(P).EnsureSettings();
+    GiveTrainingWeapon(UTATPlayer(P), UTATPlayer(P).Settings.WeaponIndex);
+}
 function bool RestartPlayer(Pawn P)
 {
-    if (Running)
-        FinishSession(False);
+    if (Running) FinishSession(False);
     return Super.RestartPlayer(P);
 }
-
-function string CurrentSnapshot(UTATPlayer P)
-{
-    return "profile="$P.Settings.ActiveProfile$"|sens="$P.MouseSensitivity
-        $"|nosmooth="$P.bNoMouseSmoothing$"|maxsmooth="$P.bMaxMouseSmoothing
-        $"|threshold="$P.MouseSmoothThreshold$"|fov="$SessionFOV;
-}
-
 function StartSession(UTATPlayer P)
 {
-    local vector Z;
-    if (Level.NetMode != NM_Standalone || Running || P.Health <= 0)
-        return;
+    local vector Z, Pos;
+    local int I;
+    if (Running || P == None || P.Health<=0) return;
     P.EnsureSettings();
-    Trainee = P;
-    if (UTATShock(P.Weapon) == None)
+    Trainee=P;
+    GiveTrainingWeapon(P,P.Settings.WeaponIndex);
+    if (P.Weapon==None) return;
+    if (Room!=None)
     {
-        P.ClientMessage("Select the training Shock Rifle first.");
-        return;
+        if (!P.SetLocation(Room.Location))
+        {
+            P.ClientMessage("Start area blocked.");
+            return;
+        }
+        P.SetRotation(Room.Rotation);
+        P.ViewRotation=Room.Rotation;
+        P.Velocity=vect(0,0,0);
     }
-    Anchor = P.Location;
-    AnchorRotation = P.ViewRotation;
-    AnchorRotation.Pitch = 0;
-    AnchorRotation.Roll = 0;
-    GetAxes(AnchorRotation, ForwardAxis, SideAxis, Z);
-    TargetCenter = Anchor + 700 * ForwardAxis;
-    TargetIndex = 0;
-    Shots = 0;
-    Hits = 0;
-    HitTimeSum = 0;
-    ExerciseMode = P.Settings.Exercise;
-    SessionDuration = P.Settings.Duration;
-    SessionFOV = P.FOVAngle;
-    Snapshot = CurrentSnapshot(P);
-    StartedAt = Level.TimeSeconds;
-    Running = True;
-    if (!PlaceTarget())
+    Anchor=P.Location;
+    AnchorRotation=P.ViewRotation;
+    AnchorRotation.Pitch=0;
+    AnchorRotation.Roll=0;
+    GetAxes(AnchorRotation,ForwardAxis,SideAxis,Z);
+    WeaponIndex=P.Settings.WeaponIndex;
+    SessionFOV=P.DefaultFOV;
+    Snapshot="profile="$P.Settings.ActiveProfile$"|sens="$P.MouseSensitivity
+        $"|nosmooth="$P.bNoMouseSmoothing$"|maxsmooth="$P.bMaxMouseSmoothing
+        $"|threshold="$P.MouseSmoothThreshold$"|fov="$SessionFOV;
+    Shots=0; Hits=0; Eliminations=0; DamageDealt=0;
+    RoundId++;
+    ActiveShot=None;
+    ExerciseMode=P.Settings.Exercise;
+    SessionDuration=P.Settings.Duration;
+    StartedAt=Level.TimeSeconds;
+    HasResult=False;
+    Running=True;
+    for (I=0; I<3; I++)
     {
-        FinishSession(False);
-        P.ClientMessage("No clear target lane. Move to an open area and face it, then AimStart.");
-        return;
+        Pos=Anchor+900*ForwardAxis+(I-1)*240*SideAxis;
+        Targets[I]=Spawn(class'UTATTarget',,,Pos,rotator(-ForwardAxis));
+        if (Targets[I]==None || !FastTrace(Pos,Anchor))
+        {
+            FinishSession(False);
+            P.ClientMessage("Target area blocked. Use the included training room.");
+            return;
+        }
+        Targets[I].Trainer=Self;
+        Targets[I].HomePosition=Pos;
+        Targets[I].Index=I;
     }
-    Log("START|version=1|"$Snapshot, 'UTAT');
-    P.ClientMessage("Session started. Use AimStop to cancel. Keep input and FOV unchanged.");
+    P.Health=1999;
+    P.ClientMessage("Training started. AimFinish ends and shows results; AimRestart repeats.");
 }
-
-function vector CandidateLocation()
+function UTATShot NewShot()
 {
-    local float Offset;
-    // Fixed order independent of the engine's global random state.
-    switch (TargetIndex % 5)
-    {
-        case 0: Offset = 0; break;
-        case 1: Offset = -160; break;
-        case 2: Offset = 160; break;
-        case 3: Offset = -80; break;
-        case 4: Offset = 80; break;
-    }
-    if (ExerciseMode == 1)
-        Offset = 0;
-    return TargetCenter + Offset * SideAxis;
+    local UTATShot S;
+    if (!Running || (SessionDuration>0 && Level.TimeSeconds-StartedAt>=SessionDuration)) return None;
+    S=new(None) class'UTATShot';
+    S.Trainer=Self; S.RoundId=RoundId;
+    Shots++;
+    return S;
 }
-
-function bool PlaceTarget()
+function bool AcceptDamage(UTATTarget T, int Damage)
 {
-    local vector Pos, HitLoc, HitNormal;
-    local Actor Obstruction;
-    Pos = CandidateLocation();
-    // Reject a lane obstructed by world geometry or another actor.
-    Obstruction = Trace(HitLoc, HitNormal, Pos, Anchor, False, vect(20,20,40));
-    if (Obstruction != None)
-        return False;
-    if (TrainingTarget == None)
+    if (!Running || Damage<=0 || ActiveShot==None || ActiveShot.Trainer!=Self
+        || ActiveShot.RoundId!=RoundId || (SessionDuration>0 && Level.TimeSeconds-StartedAt>=SessionDuration)) return False;
+    if (!ActiveShot.Hit)
     {
-        TrainingTarget = Spawn(class'UTATTarget',,, Pos, rotator(-ForwardAxis));
-        if (TrainingTarget == None)
-            return False;
-        TrainingTarget.Trainer = Self;
+        ActiveShot.Hit=True;
+        Hits++;
     }
-    else if (!TrainingTarget.SetLocation(Pos))
-        return False;
-    TrainingTarget.bHidden = False;
-    TrainingTarget.SetCollision(True, False, False);
-    TrainingTarget.AcceptHits = True;
-    WaitingTarget = False;
-    ExposedAt = Level.TimeSeconds;
+    DamageDealt+=Min(Damage,T.Health);
     return True;
 }
-
-function RegisterShot()
-{
-    if (Running && Level.TimeSeconds - StartedAt < SessionDuration)
-        Shots++;
-}
-
-function RegisterHit(UTATTarget T)
-{
-    if (!Running || WaitingTarget || T != TrainingTarget
-        || Level.TimeSeconds - StartedAt >= SessionDuration)
-        return;
-    Hits++;
-    HitTimeSum += Level.TimeSeconds - ExposedAt;
-    T.AcceptHits = False;
-    T.bHidden = True;
-    T.SetCollision(False, False, False);
-    WaitingTarget = True;
-    NextTargetAt = Level.TimeSeconds + 0.25;
-    TargetIndex++;
-}
-
 function Tick(float Delta)
 {
-    local vector Pos;
+    local int I;
     local float Age;
-    if (!Running)
-        return;
-    if (Trainee == None || Trainee.Health <= 0)
+    local vector Pos;
+    if (!Running) return;
+    if (Trainee==None || Trainee.Health<=0)
     {
-        FinishSession(False);
-        return;
+        FinishSession(False); return;
     }
-    // Config changes through the stock menu/console also invalidate the run.
-    if (Trainee.FOVAngle != SessionFOV || Snapshot != CurrentSnapshot(Trainee))
+    Trainee.Health=1999;
+    if (Trainee.Weapon!=None && Trainee.Weapon.AmmoType!=None)
+        Trainee.Weapon.AmmoType.AmmoAmount=Min(50,Trainee.Weapon.AmmoType.MaxAmmo);
+    Age=Level.TimeSeconds-StartedAt;
+    if (SessionDuration>0 && Age>=SessionDuration)
     {
-        Trainee.ClientMessage("Configuration changed. Session cancelled.");
-        FinishSession(False);
-        return;
+        FinishSession(True); return;
     }
-    if (UTATShock(Trainee.Weapon) != None && Trainee.Weapon.AmmoType != None)
-        Trainee.Weapon.AmmoType.AmmoAmount = 50;
-    Age = Level.TimeSeconds - StartedAt;
-    if (Age >= SessionDuration)
+    for (I=0; I<3; I++)
     {
-        FinishSession(True);
-        return;
-    }
-    if (TrainingTarget == None)
-    {
-        FinishSession(False);
-        return;
-    }
-    if (WaitingTarget)
-    {
-        if (Level.TimeSeconds >= NextTargetAt && !PlaceTarget())
+        if (Targets[I]==None) { FinishSession(False); return; }
+        if (Targets[I].bHidden && Level.TimeSeconds>=Targets[I].ReadyAt)
         {
-            Trainee.ClientMessage("TrainingTarget lane blocked. Session cancelled.");
-            FinishSession(False);
+            Targets[I].Health=100;
+            Targets[I].bHidden=False;
+            Targets[I].SetCollision(True,False,False);
         }
-    }
-    else if (ExerciseMode == 1)
-    {
-        Pos = TargetCenter + 160 * Sin(Age * 2.0) * SideAxis;
-        if (!TrainingTarget.SetLocation(Pos))
-            FinishSession(False);
+        Pos=Targets[I].HomePosition;
+        if (ExerciseMode==1) Pos+=64*Sin(Age*2.0+I)*SideAxis;
+        if (!Targets[I].SetLocation(Pos)) { FinishSession(False); return; }
     }
 }
-
 function float AccuracyPercent()
 {
-    if (Shots == 0)
-        return 0;
-    return 100.0 * Hits / Shots;
+    if (Shots==0) return 0;
+    return 100.0*Hits/Shots;
 }
-
 function FinishSession(bool Complete)
 {
-    local float Elapsed, MeanMS;
-    local string ResultLine;
-    if (!Running)
-        return;
-    Running = False;
-    Elapsed = FMin(SessionDuration, FMax(0, Level.TimeSeconds - StartedAt));
-    if (TrainingTarget != None)
-        TrainingTarget.Destroy();
-    TrainingTarget = None;
-    WaitingTarget = False;
-    if (Hits > 0)
-        MeanMS = 1000.0 * HitTimeSum / Hits;
-    ResultLine = "RESULT|version=1|complete="$Complete$"|exercise="$ExerciseMode
-        $"|protocol=shock-primary-v1|sequence=1|duration="$SessionDuration
-        $"|elapsed="$Elapsed$"|shots="$Shots$"|hits="$Hits$"|mean_ms="$MeanMS
-        $"|map="$string(Level.Outer.Name)$"|anchor="$string(Anchor)
-        $"|yaw="$AnchorRotation.Yaw$"|input=unverified|"$Snapshot;
-    Log(ResultLine, 'UTAT');
-    LastSummary = "Hits "$Hits$" / "$Shots$"  |  Accuracy "$int(AccuracyPercent())$"%";
-    if (Trainee != None)
+    local int I;
+    local Projectile P;
+    local string Record;
+    if (!Running) return;
+    Running=False;
+    LastElapsed=FMax(0,Level.TimeSeconds-StartedAt);
+    if (SessionDuration>0) LastElapsed=FMin(SessionDuration,LastElapsed);
+    if(Complete && SessionDuration>0 && LastElapsed<SessionDuration) Complete=False;
+    LastComplete=Complete;
+    HasResult=True;
+    ActiveShot=None;
+    for (I=0; I<3; I++)
     {
-        Trainee.Settings.LastResult = ResultLine;
+        if (Targets[I]!=None) Targets[I].Destroy();
+        Targets[I]=None;
+    }
+    foreach AllActors(class'Projectile',P)
+        if (P.Instigator==Trainee) P.Destroy();
+    Record="RESULT|version=2|complete="$Complete$"|exercise="$ExerciseMode
+        $"|protocol=primary-units-v2|weapon="$WeaponLabel(WeaponIndex)$"|unit="$UnitLabel(WeaponIndex)
+        $"|sequence=1|duration="$SessionDuration$"|elapsed="$LastElapsed$"|shots="$Shots$"|hits="$Hits
+        $"|kills="$Eliminations$"|damage="$DamageDealt$"|mean_ms=0|map="$string(Level.Outer.Name)
+        $"|anchor="$string(Anchor)$"|yaw="$AnchorRotation.Yaw$"|input=unverified|"$Snapshot;
+    Log(Record,'UTAT');
+    LastSummary="Accuracy "$int(AccuracyPercent())$"% | Hits "$Hits$" / "$Shots$" | Eliminations "$Eliminations;
+    if (Trainee!=None)
+    {
+        Trainee.Settings.LastResult=Record;
         Trainee.Settings.SaveConfig();
         Trainee.ClientMessage(LastSummary);
-        if (!Complete)
-            Trainee.ClientMessage("Cancelled session: excluded from comparisons.");
+        if (!SmokeTest) Trainee.ShowTrainingPanel();
     }
 }
-
 defaultproperties
 {
-    GameName="UT99 Aimtrainer (CTF Lab)"
+    GameName="UT99 Aimtrainer"
     DefaultPlayerClass=Class'UTAT.UTATPlayer'
     HUDType=Class'UTAT.UTATHUD'
     DefaultWeapon=Class'UTAT.UTATShock'

@@ -24,4 +24,27 @@ class Results(unittest.TestCase):
     def test_build_does_not_retain_unrelated_mods(self):
         s=build_ini('[Editor.EditorEngine]\nEditPackages=OtherMod\nFoo=Bar\n')
         self.assertNotIn('OtherMod',s);self.assertIn('EditPackages=UTAT',s);self.assertIn('Foo=Bar',s)
+
+class VersionTwo(unittest.TestCase):
+    def row(self, **changes):
+        s=BASE.replace('version=1','version=2')+'|weapon=Flak Cannon|unit=fragment|kills=1|damage=100'
+        for k,v in changes.items():
+            import re
+            s=re.sub(r'(?<=\|)'+k+r'=[^|]*',k+'='+str(v),s)
+        return s
+    def test_free_practice(self):
+        row=parse_result(self.row(duration=0,elapsed=12))
+        self.assertIsNone(row['time_to_hit_ms'])
+        self.assertEqual(row['hits_per_minute'],35)
+    def test_weapon_groups_separate(self):
+        a=parse_result(self.row()); b=parse_result(self.row(weapon='Rocket Launcher',unit='projectile'))
+        self.assertEqual(len(summarize([a,b])),2)
+    def test_requires_weapon_metadata(self):
+        with self.assertRaises(ValueError):parse_result(BASE.replace('version=1','version=2'))
+
+    def test_reject_bad_damage_or_elimination_counts(self):
+        for changes in [{'kills': -1}, {'kills': 1.5}, {'damage': 'nan'}]:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                parse_result(self.row(**changes))
+
 if __name__=='__main__':unittest.main()
