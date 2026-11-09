@@ -15,6 +15,7 @@ var config int Exercise; // 0 flick, 1 strafe
 var config int WeaponIndex;
 var config int Duration;
 var config string LastResult;
+var config int NetworkEnvironment,AddedRTT,NetworkWeapon;
 
 defaultproperties
 {

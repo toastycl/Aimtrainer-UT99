@@ -1,65 +1,26 @@
-# Tasks
+# Roadmap
 
-## 0.2 — Room → choose → shoot → score → repeat
+## Development build 0.4.0
 
-- [x] Create a simple flat training room and editable T3D source.
-- [x] Compile and package a real .unr with the mod.
-- [x] Remove mandatory profile workflow; use normal mouse settings.
-- [x] Add weapon selector: Shock, Sniper, Minigun, Pulse, Rocket, Flak.
-- [x] Add three static or laterally moving human-shaped targets.
-- [x] Add timed rounds, free practice, end score and replay controls.
-- [x] Count successful emissions once, including splash/fragment behavior.
-- [x] Separate weapons/units in v2 result exports.
-- [ ] Validate the complete rendered menu/input flow in a real Windows client.
-- [ ] Validate the complete rendered menu/input flow on macOS/Linux.
+- [x] Simple own training map and compiled installation package.
+- [x] Local and actual IGPlus environment selection in UWindow.
+- [x] Arbitrary 0–300 ms added RTT, validated in menu/helper/relay.
+- [x] All eleven classic damage weapons; secondary fire available.
+- [x] Static/lateral-moving targets, random safe starts and respawns.
+- [x] Timed/free rounds, infinite ammo and server-confirmed scoring.
+- [x] Result overlay, fresh-fire acknowledgement and retained setup.
+- [x] About / Credits, launch scripts, README and Spanish test guide.
 
-## Next
+## Acceptance and follow-up
 
-- Add remaining weapons and secondary modes with clearly defined scoring.
-- Add Shock combo exercises and continuous Pulse beam tracking.
-- Add distance/target-size choices, direction changes, jumps and dodge exercises.
-- Improve in-game history and comparisons; capture client/render/input metadata.
-- Decide a source license before describing the project as open source.
+- [ ] Physical Windows input/visual acceptance and wider resolution review.
+- [ ] Native macOS launcher support and Mac acceptance.
+- [ ] Match exact IGPlus server profiles and human-player hitboxes.
+- [ ] Validate anticheat separately; no production deployment is automatic.
+- [ ] Export network rounds/history and collect richer client metadata.
+- [ ] Seed replay for more controlled sensitivity comparisons.
+- [ ] Distance/size options, direction changes, jumping and dodge targets.
+- [ ] Optional jitter/loss/bandwidth simulation.
+- [ ] Choose a source license.
 
-## Later
-
-Online lab with server-confirmed hits, replication and netcode/anticheat compatibility. Manual installation only; no automatic changes to live servers.
-
-## 0.2.1 — tester-reported regressions
-
-- [x] Separate player staging/round position from targets.
-- [x] Disable inherited combat bots, tournament readiness and DM match ending.
-- [x] True infinite ammo without depending on round tick/refill.
-- [x] Independent active-play clock honoring selected seconds.
-- [x] Manual Finish, automatic timed result, replay and persistent result HUD.
-- [x] Run actual Linux viewport/UWindow callback integration with a 30-second round.
-- [ ] Verify the corrected flow manually on the tester's client and mouse hardware.
-
-## 0.3.0 — random spawns and result flow
-
-- [x] Random safe trainee starts and distinct random target respawns.
-- [x] Single Start control preserves weapon/duration through room travel.
-- [x] Finish over the world; fresh primary fire returns to selection without shooting.
-- [x] Real Linux client regression, including a 30-second timed round.
-- [x] Separate IGPlus 11 Shock/Sniper client/server proof with localhost UDP delay.
-- [ ] Integrate network lab selection, training rounds and accuracy accounting.
-- [ ] Match a tester's exact IGPlus version/configuration and validate manually.
-- [ ] Expose deterministic spawn seed replay for comparable sensitivity trials.
-
-## 0.3.1 — project information
-
-- [x] Add in-game About / Credits with ToastyCL, UTC build date and project scope.
-- [x] Preserve setup selections when opening/closing About.
-- [x] Rewrite README with installation, usage, scoring and explicit latency-selection instructions.
-
-## WIP — arbitrary selectable latency + IGPlus
-
-Contributor handoff and acceptance criteria: [WIP_SELECTABLE_PING.md](WIP_SELECTABLE_PING.md).
-
-- [x] Accept arbitrary integer added RTT values, with shared validation/session manifest.
-- [x] External interactive launcher for Shock/Sniper and exact ms input.
-- [x] Manual sandbox path preserving IGPlus and leaving aiming/firing to the user.
-- [ ] Numeric latency field and environment selection inside UWindow.
-- [ ] Helper handshake, startup error recovery and cross-platform lifecycle acceptance.
-- [ ] Network round timer, target lifecycle, infinite ammo and valid accuracy accounting.
-- [ ] Replicated result HUD and fresh-fire replay flow.
+[Public implementation/progress notes](WIP_SELECTABLE_PING.md) · [Validation](VALIDATION.md).

@@ -1,27 +1,39 @@
-# Architecture — practice room
+# Architecture — development build 0.4.0
 
-`UTATGame` runs a local room, not a settings wizard. `UTATRoomInfo` defines separate player/target spawn zones. `UTATSpawnPlanner` uses a per-round recorded random seed and placement rejection checks. Each round resets the player, equips the selected weapon, creates three static/strafe `UTATTarget` Pawns and resets counters. Targets have 100 HP and respawn after elimination.
+## Local practice
 
-Six adapters inherit stock weapons. Hitscan adapters surround each stock TraceFire with a `UTATShot` token. `UTATProjectileNotify` replaces exact stock primary projectile classes with subclasses that preserve stock flight/damage functions. Initial velocity/acceleration/physics and instigator are preserved. SpawnNotify returns compatible subclasses so subsequent stock weapon setup (such as loaded-rocket fields) applies to the replacement.
+`UTATGame` runs standalone with `UTATPlayer`, an independent active-play round controller, random safe player/target placement and three stationary/lateral-strife Pawn targets. DeathMatch bot fill, warmup and ordinary match ending are disabled. `LC*` adapters inherit the eleven stock weapons; `LP*` adapters inherit stock projectiles. Custom ammo implements simulated `UseAmmo` without depletion, both before and during rounds.
 
-Each token belongs to a round and can count as a successful emission only once. Damage to multiple targets can increase damage/eliminations without increasing successful-emission count again. Round transitions clear tokens and remove pending player projectiles. Flak denominators count fragments, not shells.
+Each emitted trace/projectile/fragment receives a round-scoped token. Damage to several targets marks it successful once. Spawned explosion children inherit an existing parent token. Damage and eliminations remain separate. Shock combo damage credits the orb and its detonating trace. Pulse secondary tracks beam contact time separately rather than inventing projectile shots for a continuous beam.
 
-The native UWindow panel is accessible from Mods even before entering the room. It provides weapon/exercise/duration selection and a single Start control that travels and starts with URL-carried settings if outside the room. Finish and cancel return to a world result overlay. A fresh primary fire acknowledges results without emitting a weapon shot; detailed configuration profiles remain optional console commands.
+## Network practice
 
-The included T3D room is rebuilt to a real .unr by UCC exec. Own grid textures are imported into UTAT.u. Unlit polygons permit a deterministic headless build without renderer-dependent lightmaps. Original assets and the compiler are not repository content.
+`UTATRoundGame` owns the authoritative timer, placement, respawns, scoring and round completion. It keeps UTPure's actual player class. `NW*` and `NP*` instrumentation adapters inherit IGPlus 11 implementations and delegate behavior to Super; they do not substitute stock weapons for IGPlus weapons.
 
-Result schema v2 includes weapon, emission unit, eliminations and damage. The exporter supports legacy v1, separates weapon/scenario groups, and handles free practice. Continuous multi-target rounds do not claim a time-to-hit metric. Input backend and hardware latency are unverified.
+The projectile SpawnNotify runs server-side only. It temporarily inherits the original instigator **before** spawning its replacement, disables the original placeholder collision to prevent replacement/original contact, then preserves owner, location, rotation, collision dimensions/flags, velocity, acceleration and physics; subsequent weapon initialization applies to the returned compatible subclass. This matters for parent PostBeginPlay initialization, such as Shock projectiles and the Pulse beam. Projectile wrapping must not run as a non-simulated all-actor replacement on clients, which could disrupt unrelated client actors/move pools.
 
-`UTATSmokeTest`, enabled only by explicit ?SmokeTest=1, exercises engine map/round/weapon behavior without a rendered client. It does not validate UWindow rendering, mouse feel or real player input. Online player login remains disabled.
+`UTATRoundState` derives from the package-independent `UTATNetworkState` view model in UTAT. It replicates server counters, elapsed time and result state, measures owner RPC round trips and requests menu pause/finish. Its always-ticking owner controller remains reachable while the private level is paused; closing setup resumes it through the owner RPC. `UTATNetworkHUD` renders live statistics and the result over the world. A fresh primary fire is intercepted by the compatible weapon adapter, acknowledges the result and travels to local setup without firing. Held fire is cleared when the result arrives. Configuration is retained in UTATStore.
 
-## 0.2.1 lifecycle fixes
+## In-game selection and helper
 
-InitGame/PostBeginPlay clear inherited DM bot/tournament/warmup preferences in memory, and AddBot/ForceAddBot/NeedPlayers are disabled. The level's trainee PlayerStart is a staging point separate from the round anchor and target origin. Training-player damage/telefrag protection prevents practice deaths.
+The UWindow setup provides environment, an integer 0–300 ms field, eleven weapons, exercise and duration. Local mode starts directly. IGPlus sends a strict localhost UDP request through `UTATNetworkBridge`; it keeps setup visible until a READY or ERROR reply and has a timeout/cancel path.
 
-UTATAmmo* classes override UseAmmo, retaining 999 units independently of round updates. UTATRoundController owns round updates instead of relying on GameInfo match ticking. Delta is divided by TimeDilation for real active-play seconds. Menu pause remains explicit; Start/Replay closes the menu and unpauses.
+The Python standard-library helper validates requests, replaces its previous private session, starts a dedicated server and a single-client UDP delay relay, waits for engine readiness, then replies READY. Only then does the client travel through the relay. Requested latency is split evenly between directions. Closing the helper-owned client stops owned processes/transports. Nothing targets production servers.
 
-The controls window is unique/reused. If the UWindow root has not yet been created, opening is deferred until the console creates it. Finish is idempotent and results appear in the HUD without opening the menu. UTATClientTest drives a real standalone viewport and the actual UWindow callbacks, including a selected 30-second round, manual finish and replay.
+| Port | Purpose |
+| --- | --- |
+| UDP 18778 on 127.0.0.1 | Control request/ready/error/cancel |
+| UDP 18777 on 127.0.0.1 | Delayed game endpoint |
+| UDP 17777 on 127.0.0.1 | Private dedicated game server |
 
-## Optional network experiment
+The control packet is `START|request-id|weapon-key|added-rtt-ms|exercise|duration`. Replies are `READY|request-id` or `ERROR|request-id|message`; `CANCEL|request-id` cancels a matching owned request. No arbitrary command, destination address or game class is accepted from the menu.
 
-UTATNetLab builds independently and dynamically loads IGPlus 11 weapon classes. UTPure retains control of its player class. Its owner probe measures client-clock RPC round trips and fires from the actual client; the server target counts damage calls. A Python loopback UDP relay delays each direction by half the requested added RTT. The experiment does not reuse standalone UTAT accuracy accounting and has no training UI yet. IGPlus is a separate GPLv3 runtime dependency, not copied into this repository. See NETWORK_LAB.md.
+The helper copies normal engine/user settings on first startup into practice ini files. Client and dedicated-server engine ini files are separate to avoid competing writes. Normal User.ini / UnrealTournament.ini are not edited. The package uses UCC as a server executable, not as a compiler on the player's machine.
+
+## Metrics and limits
+
+Requested added RTT is distinct from native UT Game ping, displayed from PlayerReplicationInfo.Ping. The separate client-clock RPC diagnostic includes frame/tick effects and is not a hardware-latency measurement. Neither value is forced to match the request. A 0 ms request adds no delay; it is not a zero-latency physical connection. No jitter, loss or bandwidth emulation is included.
+
+Local logs retain schema v2 with a new `all-fire-units-v3` protocol and optional beam fields; the exporter supports beam-only rounds without treating them as zero-percent projectile accuracy. Network logs currently use `NETRESULT` and are not imported by the local exporter. Native tests are opt-in and disabled during ordinary play.
+
+The simple Pawn targets are not equivalent to replicated IGPlus human-player hitboxes. Exact live-server profiles, physical input, Windows/macOS behavior and anticheat compatibility require separate acceptance. Original UT assets/toolchain and IGPlus are external dependencies.

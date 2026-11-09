@@ -4,7 +4,7 @@ Requires a built UTATNetLab, a full UT install, and separately installed IGPlus 
 """
 import argparse, os, re, subprocess, time
 from pathlib import Path
-from network_config import NetworkSession
+from network_config import NetworkSession,WEAPONS
 ROOT=Path(__file__).resolve().parents[1]
 def stop_process(process):
     if process is None:return
@@ -14,7 +14,7 @@ def stop_process(process):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--ut-root',type=Path,required=True)
-    p.add_argument('--weapon',choices=['Shock','Sniper'],default='Shock');p.add_argument('--rtt-ms',type=int,default=100)
+    p.add_argument('--weapon',choices=WEAPONS,default='Shock');p.add_argument('--rtt-ms',type=int,default=100)
     p.add_argument('--offscreen',action='store_true')
     p.add_argument('--manual',action='store_true',help='WIP sandbox: no automatic aiming/fire/exit; close UT to stop')
     p.add_argument('--manual-check',action='store_true',help='Developer check: verify sandbox stays open without automatic firing')

@@ -21,7 +21,7 @@ class SelectableLatency(unittest.TestCase):
     def test_invalid_values_cannot_be_saved_or_launched(self):
         for value in (-1,301,True,85.5,'85',float('nan')):
             with self.subTest(value=value),self.assertRaises(ValueError):NetworkSession('Shock',value)
-        with self.assertRaises(ValueError):NetworkSession('Rocket',100)
+        with self.assertRaises(ValueError):NetworkSession('Unknown',100)
     def test_invalid_prompt_retries_without_silently_using_a_preset(self):
         answers=iter(['Shock','-1','abc','301','85'])
         self.assertEqual(choose_session(read=lambda prompt:next(answers)).added_rtt_ms,85)

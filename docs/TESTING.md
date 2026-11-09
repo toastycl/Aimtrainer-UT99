@@ -1,33 +1,18 @@
-# Manual client acceptance
+# Manual acceptance — 0.4.0
 
-1. Install UTAT.u + UTAT.int in System and DM-UTAT-Room.unr in Maps on a test UT99 469e client.
-2. Open Mods → UT99 Aimtrainer from the main menu, select Sniper and use the single Start training button; verify it enters with Sniper. Check readable/non-overlapping controls at 1024x768 and 1920x1080.
-3. Choose each weapon in turn. Verify primary timing/spread/physics, Sniper zoom and Minigun secondary. Other secondary modes should be explicitly unavailable.
-4. Run static and moving exercises. Confirm three visible, human-shaped targets remain inside the room and respawn with 100 HP. Check head/body Sniper damage.
-5. Deliberately hit and miss. Compare traces, Pulse projectiles, loaded rockets and Flak fragments against displayed denominators. One splash projectile damaging several targets must count as one successful emission. Accuracy must remain ≤100%.
-6. Complete a timed round: results must appear over the world without opening the menu. Finish free practice manually: results must appear. Start again: different random safe start, new targets, zeroed counters and no leftover projectiles.
-7. Finish a timed round early/cancel: show score but exclude it from completed summaries. Test zero-shot, no-hit and immediate-finish rounds.
-8. Change DPI/sensitivity through normal settings between rounds. Verify no mandatory profile or automatic DPI/input switch. Test original-setting restoration if using optional profile commands.
-9. Export retained logs, verify separate weapons/units/scenarios and legacy v1 compatibility.
-10. Confirm settings, bindings and normal gameplay after leaving the map and restarting the client.
+Use [QUICKSTART_ES.md](QUICKSTART_ES.md) to install and run the development package. Preserve normal settings and use a test copy of UT99 469e.
 
-The opt-in dedicated-engine smoke harness tests real map/weapon/score logic without a rendered client. It is not proof of menu rendering or mouse behavior. Do not recommend daily use until the above acceptance checks pass.
+1. Check setup/About readability at 1024×768 and 1920×1080. Confirm eleven weapons in both Local and IGPlus.
+2. Local: start each weapon, use both fire modes, verify stock behavior, unlimited ammo and three visible targets. Sniper secondary is zoom; Redeemer secondary has its guided camera.
+3. IGPlus: launch through Start-Aimtrainer, enter arbitrary 0/37/85/143/300 ms, select a weapon/exercise/duration and Start. No external per-round command should be necessary.
+4. Missing helper should time out with actionable feedback and keep setup available. Check invalid/blank/out-of-range ms, busy ports, missing packages and cancellation during startup.
+5. Verify requested additional RTT and ping estimate are distinct. Do not require scoreboard ping to equal the requested delay. Local must not claim applied network delay.
+6. Use static and moving targets, eliminate repeatedly, and confirm separated random respawns. Exercise movement, jump and dodge. Check Sniper head/body behavior against the simple target cylinder.
+7. Deliberately hit and miss. Compare emitted traces/projectiles/fragments against counters; splash must not count one unit more than once. Check Shock combo component credit, Bio children, Flak shell fragments and Redeemer expanding blast.
+8. Pulse secondary: inspect contact-time percentage separately from projectile accuracy. Test contact/loss of contact and a beam-only round.
+9. Complete 30 seconds in each environment. Results must stay over the world. Hold fire at the deadline: it must not skip results. Release and press fresh primary fire: no extra shot and return to setup.
+10. Free practice / Finish round, early Finish, Cancel, zero-shot rounds, menu pause/resume, replay and selection retention. No stale projectile should score in a new round.
+11. Change weapon/ms/exercise/duration between rounds; a network Start must create a fresh session without stale delayed packets. Close the helper-owned game and check its owned helper/server/relay stop.
+12. Change sensitivity/input using normal client settings, repeat the same weapon/fire style several times and verify settings/bindings remain usable. No DPI switch or mandatory profile should occur.
 
-## 0.2.1 regressions
-
-- With your normal DM settings still enabling bots, launch the room and verify no combat bots appear. Do not clear your personal ini files.
-- Confirm random safe positions on the player side and three targets in their separate area.
-- Fire each weapon before and during a round. Ammo should remain at 999 without pickups/reloads.
-- Select 30 seconds, click Start and play until automatic results appear. Opening the menu deliberately pauses active practice; Start training must resume it.
-- During another round, open controls and choose Finish round. Controls must close and the score must appear over the room. A held fire must not skip the result; a fresh primary fire returns to selection without firing or changing counters.
-- Repeat several times. Counters reset; there should be only one controls window and no old projectiles.
-- Developer integration: `python scripts/client_smoke.py --ut-root /path/to/UT --offscreen` on Linux with a working SDL offscreen renderer, or omit --offscreen for a normal client. This requires a complete game installation and runs a 30-second viewport test.
-
-## 0.3.0 regressions
-
-- Eliminate targets repeatedly: their respawns must vary and stay separated from the trainee.
-- Outside the room choose Sniper + 30 seconds and use Start training once. Neither choice may reset during travel.
-- Confirm only one Start button exists.
-- Let a round end while firing: results stay over the world. Release and press primary fire again to choose the next round. Check no extra shot is counted.
-- Repeat with static/moving targets and each supported weapon.
-- Optional network experiment and its separate limits: NETWORK_LAB.md.
+Native checks use actual engine/viewport/weapon calls and controlled target positions. They are not human aiming, hardware latency or complete visual acceptance. The first supported helper test path is Windows/Linux; macOS `.app` discovery is pending. No ACE or live-server equivalence is certified.

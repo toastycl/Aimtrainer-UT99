@@ -1,13 +1,9 @@
-# Development build 0.3.1
+# Development delivery 0.4.0
 
-[Download compiled mod + map](UTAT-alpha-0.3.1.zip?raw=true). With UT closed, replace both System files and the Maps file. Preserve your personal ini files. See the [Spanish guide](../docs/QUICKSTART_ES.md).
+[**Download the complete package**](UTAT-dev-0.4.0.zip?raw=true) · [Installation/test guide in Spanish](../docs/QUICKSTART_ES.md) · [Validation](../docs/VALIDATION.md) · [Checksums](SHA256SUMS)
 
-Includes About / Credits with ToastyCL and the UTC build date. Retains random safe spawns, one Start button preserving weapon selection, results over the room, infinite ammo and timed rounds.
+Includes the project mod/map, IGPlus-derived instrumentation package, standard-library helper and launch scripts. Select Local or IGPlus, any integer added RTT from 0 to 300 ms, eleven classic weapons, target behavior and duration inside UT. Network mode needs separately installed official IGPlus 11 packages and Python 3.10+; original game/IGPlus binaries are not bundled.
 
-[Optional IGPlus developer experiment, unchanged at 0.3.0](UTAT-network-lab-0.3.0.zip?raw=true) is separate: automated Shock/Sniper client/server checks with controlled localhost delay. It requires the base room and separately installed official IGPlus 11 packages. [Instructions and ms selection](../docs/NETWORK_LAB.md). It is not yet a selectable training mode.
+Use a test UT99 469e installation. Replace all listed package files with UT closed and preserve normal ini files. For IGPlus, open Start-Aimtrainer.cmd from the test installation root. The helper copies settings into separate practice files.
 
-Only project content is distributed. No original game or IGPlus packages are included. Linux engine/client integration passed; manual hardware/visual and Windows/macOS acceptance remain pending. See [validation](../docs/VALIDATION.md) and [checksums](SHA256SUMS).
-
-## WIP — selectable latency
-
-[Compiled WIP lab](UTAT-network-lab-WIP.zip?raw=true) · [Contributor handoff and setup](../docs/WIP_SELECTABLE_PING.md) · [Checks](../docs/WIP_NETWORK_CHECKS.md). The external launcher accepts arbitrary integer ms and keeps an IGPlus sandbox open for manual firing. It requires the repository/Python helper, the base room and official IGPlus dependencies; these are not bundled. In-game numeric selection, network rounds and accuracy remain pending. The normal trainer remains 0.3.1.
+Earlier 0.2.x, 0.3.x and WIP packages remain as historical builds. The prior standalone 0.3.1 package is a fallback, not the current all-weapons/network delivery. No GitHub Release or automatic production deployment is involved.

@@ -69,7 +69,7 @@ def main():
         print(map_output)
         if mapped.returncode or not room.is_file() or '0 error' not in map_output.lower() or 'Polys: 6 -> 6' not in map_output:
             raise RuntimeError('Training map did not build successfully. See build/map-build.log')
-        target = dist/'UTAT-alpha-0.3.1.zip'
+        target = dist/'UTAT-alpha-0.4.0.zip'
         with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as z:
             z.write(binary, 'System/UTAT.u')
             z.write(room, 'Maps/DM-UTAT-Room.unr')

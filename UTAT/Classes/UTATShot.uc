@@ -2,4 +2,4 @@
 class UTATShot extends Object;
 var UTATGame Trainer;
 var int RoundId;
-var bool Hit;
+var bool Hit,Beam;

@@ -6,14 +6,17 @@ from build import build_ini, REPO
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--ut-root',type=Path,required=True);a=p.parse_args()
-    root=a.ut_root.resolve(); system=root/'System64'
-    if not system.is_dir():system=root/'System'
-    compiler=next((system/n for n in ('ucc.exe','ucc-bin-amd64','ucc-bin','ucc') if (system/n).is_file()),None)
+    root=a.ut_root.resolve()
+    compiler=next((d/n for d in (root/'System64',root/'System') for n in ('ucc.exe','ucc64.exe','ucc-bin-amd64','ucc-bin','ucc') if (d/n).is_file()),None)
     if compiler is None:p.error('UCC not found')
+    system=compiler.parent
+    for name in ('InstaGibPlus_11.u','InstaGibPlusAssets_v2.u'):
+        if not any((d/name).is_file() for d in (system,root/'System')):p.error('Install official IGPlus 11 first: missing '+name)
+    (REPO/'build').mkdir(exist_ok=True)
     shutil.copytree(REPO/'UTATNetLab',root/'UTATNetLab',dirs_exist_ok=True)
     defaults=system/'Default.ini'
     if not defaults.exists():defaults=root/'System'/'Default.ini'
-    ini=build_ini(defaults.read_text(encoding='utf-8-sig')).replace('EditPackages=UTAT','EditPackages=UTAT\nEditPackages=UTATNetLab')
+    ini=build_ini(defaults.read_text(encoding='utf-8-sig')).replace('EditPackages=UTAT','EditPackages=UTAT\nEditPackages=InstaGibPlus_11\nEditPackages=UTATNetLab')
     (system/'UTATNetBuild.ini').write_text(ini)
     for d in (system,root/'System'):(d/'UTATNetLab.u').unlink(missing_ok=True)
     env=os.environ.copy();env['LD_LIBRARY_PATH']=str(system)+os.pathsep+env.get('LD_LIBRARY_PATH','')

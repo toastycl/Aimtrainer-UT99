@@ -13,7 +13,7 @@ function EnsureSettings()
     Settings.ActiveProfile = Clamp(Settings.ActiveProfile, 0, 2);
     Settings.Exercise = Clamp(Settings.Exercise, 0, 1);
     Settings.Duration = Clamp(Settings.Duration, 0, 300);
-    Settings.WeaponIndex = Clamp(Settings.WeaponIndex, 0, 5);
+    Settings.WeaponIndex = Clamp(Settings.WeaponIndex, 0, 10);
     OriginalSensitivity = MouseSensitivity;
     OriginalNoSmoothing = bNoMouseSmoothing;
     OriginalMaxSmoothing = bMaxMouseSmoothing;
@@ -174,7 +174,7 @@ event EncroachedBy(Actor Other)
 exec function AimWeapon(int Index)
 {
     EnsureSettings();
-    if(CanConfigure() && Index>=0 && Index<=5)
+    if(CanConfigure() && Index>=0 && Index<=10)
         UTATGame(Level.Game).GiveTrainingWeapon(Self,Index);
 }
 exec function AimFinish()
@@ -228,7 +228,7 @@ exec function AimHelp()
 {
     ClientMessage("Mods > UT99 Aimtrainer opens the training panel.");
     ClientMessage("AimSave 0..2 | AimProfile 0..2 | AimSensitivity 1.8 | AimSmoothing");
-    ClientMessage("AimWeapon 0..5 | AimExercise 0=static,1=strafe | AimDuration 0=free or 60");
+    ClientMessage("AimWeapon 0..10 | AimExercise 0=static,1=strafe | AimDuration 0=free or 60");
     ClientMessage("AimStart | AimFinish | AimRestart | AimStop | AimMenu");
 }
 

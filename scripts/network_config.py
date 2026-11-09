@@ -2,14 +2,16 @@
 from dataclasses import asdict, dataclass
 import json
 
+WEAPONS=('Shock','Sniper','Minigun','Pulse','Rocket','Flak','Enforcer','Bio','Ripper','Hammer','Redeemer')
+
 @dataclass(frozen=True)
 class NetworkSession:
     weapon: str = 'Shock'
     added_rtt_ms: int = 100
 
     def __post_init__(self):
-        if self.weapon not in ('Shock','Sniper'):
-            raise ValueError('Weapon must be Shock or Sniper in this WIP')
+        if self.weapon not in WEAPONS:
+            raise ValueError('Unknown classic weapon')
         if type(self.added_rtt_ms) is not int or not 0 <= self.added_rtt_ms <= 300:
             raise ValueError('Added RTT must be a whole number from 0 to 300 ms')
 

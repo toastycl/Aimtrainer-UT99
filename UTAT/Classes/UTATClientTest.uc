@@ -34,6 +34,7 @@ function Tick(float Delta)
         if(WC.Root==None) { P.ShowTrainingPanel(); return; }
         P.ShowTrainingPanel(); FindPanel();
         if(Panel==None) { Check(False,"controls exist"); ConsoleCommand("exit"); return; }
+        Panel.EnvironmentControl.SetSelectedIndex(0);Panel.Notify(Panel.EnvironmentControl,Panel.DE_Change);
         Panel.WeaponControl.SetSelectedIndex(1); Panel.DurationControl.SetSelectedIndex(1);
         Panel.Notify(Panel.AboutButton,Panel.DE_Click);
         AboutWindow=UTATAboutWindow(WC.Root.FindChildWindow(class'UTATAboutWindow',True));
@@ -52,7 +53,7 @@ function Tick(float Delta)
         }
         if(G.AutoStartCheck)
         {
-            Check(G.Running && G.WeaponIndex==1 && P.Weapon.IsA('UTATSniper'),"one Start button keeps selected Sniper across room travel");
+            Check(G.Running && G.WeaponIndex==1 && P.Weapon.IsA('SniperRifle'),"one Start button keeps selected Sniper across room travel");
             Check(G.SessionDuration==30,"selected duration survives room travel");
             G.FinishSession(False); P.ShowTrainingPanel(); FindPanel();
         }

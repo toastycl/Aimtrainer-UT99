@@ -15,11 +15,11 @@ function Paint(Canvas C,float X,float Y)
     ClipText(C,16,44,class'UTATAboutInfo'.static.AuthorText());
     ClipText(C,16,68,class'UTATAboutInfo'.static.BuildText());
     ClipText(C,16,104,"A practice tool for the entire UT99 community.");
-    ClipText(C,16,128,"Classic weapons / static or moving targets.");
+    ClipText(C,16,128,"11 classic weapons / static or moving targets.");
     ClipText(C,16,152,"Random spawns / unlimited ammo / round accuracy.");
     ClipText(C,16,188,"Use your usual mouse DPI, sensitivity and input.");
     ClipText(C,16,212,"DPI and hardware latency are not measured.");
-    ClipText(C,16,248,"IGPlus + latency: separate experimental lab.");
+    ClipText(C,16,248,"IGPlus: selectable 0-300 ms with local helper.");
     ClipText(C,16,272,"github.com/toastycl/aimtrainer-ut99");
 }
 function Notify(UWindowDialogControl C,byte E)

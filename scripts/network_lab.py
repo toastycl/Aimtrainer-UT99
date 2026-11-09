@@ -6,17 +6,17 @@ import argparse
 from pathlib import Path
 import subprocess
 import sys
-from network_config import NetworkSession
+from network_config import NetworkSession,WEAPONS
 ROOT=Path(__file__).resolve().parents[1]
 
 def choose_session(weapon=None,rtt_ms=None,read=input):
     if weapon is None:
         while True:
-            value=read('Weapon [Shock / Sniper, default Shock]: ').strip().lower() or 'shock'
-            if value in ('shock','sniper'):
+            value=read('Weapon ['+' / '.join(WEAPONS)+', default Shock]: ').strip().lower() or 'shock'
+            if value in tuple(w.lower() for w in WEAPONS):
                 weapon=value.title();break
-            print('Choose Shock or Sniper.')
-    if weapon not in ('Shock','Sniper'):raise ValueError('Weapon must be Shock or Sniper in this WIP')
+            print('Choose a listed classic weapon.')
+    if weapon not in WEAPONS:raise ValueError('Unknown classic weapon')
     if rtt_ms is None:
         while True:
             value=read('Added round-trip delay in ms [0..300, default 100]: ').strip() or '100'
@@ -35,7 +35,7 @@ def build_command(ut_root,session,offscreen=False):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--ut-root',type=Path,required=True)
-    p.add_argument('--weapon',choices=['Shock','Sniper'])
+    p.add_argument('--weapon',choices=WEAPONS)
     p.add_argument('--rtt-ms',type=int)
     p.add_argument('--offscreen',action='store_true')
     a=p.parse_args()

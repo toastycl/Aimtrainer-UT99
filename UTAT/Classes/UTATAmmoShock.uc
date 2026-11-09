@@ -1,5 +1,5 @@
 class UTATAmmoShock extends ShockCore;
-function bool UseAmmo(int AmountNeeded)
+simulated function bool UseAmmo(int AmountNeeded)
 {
     AmmoAmount=MaxAmmo;
     return True;

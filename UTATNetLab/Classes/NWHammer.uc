@@ -1,0 +1,42 @@
+// Instrumentation adapter: all firing/damage behavior delegates to IGPlus.
+class NWHammer extends InstaGibPlus_11.ST_ImpactHammer;
+simulated function bool ClientFire(float Value)
+{
+    if(!class'UTATNetworkState'.static.CanFire(Self,True)) return False;
+    return Super.ClientFire(Value);
+}
+simulated function bool ClientAltFire(float Value)
+{
+    if(!class'UTATNetworkState'.static.CanFire(Self,False)) return False;
+    return Super.ClientAltFire(Value);
+}
+function Fire(float Value)
+{
+    if(!class'UTATNetworkState'.static.CanFire(Self,True)) return;
+    Super.Fire(Value);
+}
+function AltFire(float Value)
+{
+    if(!class'UTATNetworkState'.static.CanFire(Self,False)) return;
+    Super.AltFire(Value);
+}
+function TraceFire(float Accuracy)
+{
+    local UTATRoundGame G;local UTATNetShot Previous;
+    G=UTATRoundGame(Level.Game);
+    if(G!=None) { if(!G.Running) return;Previous=G.ActiveShot;G.ActiveShot=G.NewShot(); }
+    Super.TraceFire(Accuracy);
+    if(G!=None) G.ActiveShot=Previous;
+}
+function TraceAltFire()
+{
+    local UTATRoundGame G;local UTATNetShot Previous;
+    G=UTATRoundGame(Level.Game);
+    if(G!=None) { if(!G.Running) return;Previous=G.ActiveShot;G.ActiveShot=G.NewShot(); }
+    Super.TraceAltFire();
+    if(G!=None) G.ActiveShot=Previous;
+}
+defaultproperties
+{
+    bCanThrow=False
+}

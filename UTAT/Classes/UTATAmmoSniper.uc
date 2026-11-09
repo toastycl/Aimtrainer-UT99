@@ -1,5 +1,5 @@
 class UTATAmmoSniper extends BulletBox;
-function bool UseAmmo(int AmountNeeded)
+simulated function bool UseAmmo(int AmountNeeded)
 {
     AmmoAmount=MaxAmmo;
     return True;

@@ -1,4 +1,6 @@
-# WIP network checks — 2026-11-09 (UTC)
+# Historical WIP network checks — 2026-11-09 (UTC)
+
+This is pre-integration evidence. For the 0.4.0 delivery see [VALIDATION.md](VALIDATION.md) and [INTEGRATION_SMOKE.md](INTEGRATION_SMOKE.md).
 
 Environment: OldUnreal 469e Linux amd64, real SDL offscreen/Mesa client and separate localhost dedicated server. IGPlus 11 runtime dependencies from the earlier proof. No physical mouse/visual acceptance or Windows/macOS check is claimed.
 

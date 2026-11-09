@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import math
+import re
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean, pstdev
@@ -14,9 +15,9 @@ COHORT = ('protocol','weapon','unit','exercise','sequence','duration','map','anc
 CONFIG = ('profile','sens','nosmooth','maxsmooth','threshold','input')
 
 def parse_result(line):
-    if 'UTAT: RESULT|' not in line:
-        return None
-    body = line.split('UTAT: RESULT|', 1)[1].strip()
+    marker=re.search(r'(?:^|UTAT: |Warning: )RESULT\|(?=version=)',line)
+    if marker is None:return None
+    body=line[marker.end():].strip()
     row = dict(piece.split('=',1) for piece in body.split('|') if '=' in piece)
     missing = set(REQUIRED)-row.keys()
     if missing:
@@ -30,7 +31,8 @@ def parse_result(line):
     row.setdefault('kills','0')
     row.setdefault('damage','0')
     row.setdefault('seed','')
-    values = {key:float(row[key]) for key in ('elapsed','shots','hits','mean_ms','duration','sens','threshold','fov','kills','damage')}
+    row.setdefault('beam_active','0');row.setdefault('beam_contact','0')
+    values = {key:float(row[key]) for key in ('elapsed','shots','hits','mean_ms','duration','sens','threshold','fov','kills','damage','beam_active','beam_contact')}
     if not all(math.isfinite(v) for v in values.values()):
         raise ValueError('Non-finite result')
     if not (0 <= values['hits'] <= values['shots']) or min(values.values()) < 0:
@@ -39,7 +41,9 @@ def parse_result(line):
         raise ValueError('Invalid counters or duration')
     if row['complete'].lower() == 'true' and values['duration']>0 and abs(values['elapsed']-values['duration']) > 0.1:
         raise ValueError('Completed result has an inconsistent duration')
-    row['accuracy_pct'] = 100*values['hits']/values['shots'] if values['shots'] else 0
+    if values['beam_contact']>values['beam_active']+0.00001:raise ValueError('Beam contact exceeds active time')
+    row['beam_contact_pct']=100*values['beam_contact']/values['beam_active'] if values['beam_active'] else None
+    row['accuracy_pct'] = 100*values['hits']/values['shots'] if values['shots'] else (None if values['beam_active'] else 0)
     row['hits_per_minute'] = 60*values['hits']/values['elapsed'] if values['elapsed'] else 0
     # No hit is a missing time measurement, never zero-ms performance.
     row['time_to_hit_ms'] = values['mean_ms'] if values['hits'] and row['version']=='1' else None
@@ -53,9 +57,12 @@ def summarize(rows):
     result=[]
     for key, group in groups.items():
         times=[r['time_to_hit_ms'] for r in group if r['time_to_hit_ms'] is not None]
+        accuracies=[r['accuracy_pct'] for r in group if r['accuracy_pct'] is not None]
+        beam=[r['beam_contact_pct'] for r in group if r.get('beam_contact_pct') is not None]
         result.append(dict(zip(COHORT+CONFIG,key), rounds=len(group),
-            accuracy_mean=mean(r['accuracy_pct'] for r in group),
-            accuracy_sd=pstdev(r['accuracy_pct'] for r in group),
+            accuracy_mean=mean(accuracies) if accuracies else None,
+            accuracy_sd=pstdev(accuracies) if accuracies else None,
+            beam_contact_mean=mean(beam) if beam else None,
             hits_per_minute_mean=mean(r['hits_per_minute'] for r in group),
             time_to_hit_ms_mean=mean(times) if times else None))
     return result
@@ -74,7 +81,7 @@ def main():
     if not rows: p.error('No UTAT result records found')
     a.out.mkdir(parents=True,exist_ok=True)
     with (a.out/'sessions.csv').open('w',newline='',encoding='utf-8') as f:
-        writer=csv.DictWriter(f,fieldnames=list(REQUIRED)+['weapon','unit','kills','damage','seed','accuracy_pct','hits_per_minute','time_to_hit_ms'])
+        writer=csv.DictWriter(f,fieldnames=list(REQUIRED)+['weapon','unit','kills','damage','seed','beam_active','beam_contact','beam_contact_pct','accuracy_pct','hits_per_minute','time_to_hit_ms'])
         writer.writeheader();writer.writerows({k:r[k] for k in writer.fieldnames} for r in rows)
     (a.out/'summary.json').write_text(json.dumps({'warning':'Input backend unverified; times are game-clock measurements, not hardware latency. Compare repeated sessions, not single rounds.','groups':summarize(rows)},indent=2),encoding='utf-8')
     print(f'Exported {len(rows)} sessions. Completed rounds only in summary.')

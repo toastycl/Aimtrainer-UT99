@@ -48,3 +48,16 @@ class VersionTwo(unittest.TestCase):
                 parse_result(self.row(**changes))
 
 if __name__=='__main__':unittest.main()
+
+class NativeAndBeam(unittest.TestCase):
+    def test_native_warning_prefix_is_imported(self):
+        row=parse_result(BASE.replace('UTAT: ','Warning: '))
+        self.assertEqual(row['accuracy_pct'],70)
+    def test_beam_only_round_has_contact_metric_not_zero_shot_accuracy(self):
+        record=BASE.replace('version=1','version=2').replace('shots=10|hits=7','shots=0|hits=0')+'|weapon=Pulse|unit=beam-time|kills=0|damage=50|beam_active=10|beam_contact=8'
+        row=parse_result(record)
+        self.assertEqual(row['beam_contact_pct'],80)
+        self.assertIsNone(row['accuracy_pct'])
+        summary=summarize([row])[0]
+        self.assertIsNone(summary['accuracy_mean']);self.assertEqual(summary['beam_contact_mean'],80)
+        with self.assertRaises(ValueError):parse_result(record.replace('beam_contact=8','beam_contact=11'))

@@ -1,6 +1,6 @@
-# 0.3.1 client regression evidence
+# Standalone UWindow regression — 0.4.0
 
-Linux 469e, SDL offscreen / Mesa llvmpipe at 1280x720. Real viewport and UWindow callbacks. About was opened and closed both before and after room travel, retaining the selected Sniper and duration. No physical clicks or manual visual acceptance. Hostile inherited DM settings requested 8 bots and tournament readiness.
+Linux 469e. Native engine/viewport callbacks; physical mouse and visual acceptance remain separate. Dedicated tests use a synthetic pawn without a Player connection.
 
 ```text
 PASS About opens with ToastyCL credit and build information

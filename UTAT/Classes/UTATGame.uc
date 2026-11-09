@@ -4,7 +4,7 @@ var UTATTarget Targets[3];
 var UTATShot ActiveShot;
 var UTATRoomInfo Room;
 var UTATRoundController RoundController;
-var float RoundElapsed, ResultsAt;
+var float RoundElapsed, ResultsAt,BeamActive,BeamContact;
 var int RandomSeed, RoundSeed, PendingWeapon, PendingExercise, PendingSeconds;
 var bool AutoStart, ResultsDismissed, AutoStartCheck;
 var bool Running, HasResult, LastComplete;
@@ -13,16 +13,19 @@ var float StartedAt, LastElapsed, SessionFOV;
 var vector Anchor, ForwardAxis, SideAxis;
 var rotator AnchorRotation;
 var string Snapshot, LastSummary;
-var bool SmokeTest, ClientTest;
+var bool SmokeTest, ClientTest,OpenSetup,MenuNetworkTest,NetworkReturnTest,ArsenalTest,ArsenalAlt;
 
 function InitGame(string Options, out string Error)
 {
     Super.InitGame(Options, Error);
     SmokeTest = HasOption(Options, "SmokeTest");
+    ArsenalAlt=HasOption(Options,"AltTest");
+    ArsenalTest=HasOption(Options,"ArsenalTest");
+    OpenSetup=HasOption(Options,"OpenSetup");MenuNetworkTest=HasOption(Options,"MenuNetworkTest");NetworkReturnTest=HasOption(Options,"NetworkReturnTest");
     ClientTest = HasOption(Options, "ClientTest");
     AutoStart=HasOption(Options,"AutoStart");
     AutoStartCheck=HasOption(Options,"AutoStartCheck");
-    PendingWeapon=Clamp(GetIntOption(Options,"LabWeapon",0),0,5);
+    PendingWeapon=Clamp(GetIntOption(Options,"LabWeapon",0),0,10);
     PendingExercise=Clamp(GetIntOption(Options,"LabExercise",0),0,1);
     PendingSeconds=Clamp(GetIntOption(Options,"LabSeconds",60),0,300);
     RandomSeed=Rand(65535)+1;
@@ -55,6 +58,9 @@ function PostBeginPlay()
     if(RoundController!=None) RoundController.Trainer=Self;
     if (SmokeTest) Spawn(class'UTATSmokeTest');
     if (ClientTest) Spawn(class'UTATClientTest');
+    if(OpenSetup) Spawn(class'UTATSetupOpener');
+    if(ArsenalTest) Spawn(class'UTATArsenalTest');
+    if(MenuNetworkTest || NetworkReturnTest) { Spawn(class'UTATMenuNetworkTest').Returning=NetworkReturnTest; }
 }
 // This lab never enters DeathMatch ready/bot-fill/end-match logic.
 function Timer() { SentText=0; }
@@ -87,14 +93,20 @@ static function string WeaponLabel(int Index)
         case 3: return "Pulse Gun";
         case 4: return "Rocket Launcher";
         case 5: return "Flak Cannon";
+        case 6:return "Enforcer";case 7:return "Bio Rifle";case 8:return "Ripper";case 9:return "Impact Hammer";case 10:return "Redeemer";
     }
     return "Unknown";
 }
 static function string UnitLabel(int Index)
 {
-    if (Index == 5) return "fragment";
-    if (Index >= 3) return "projectile";
-    return "trace";
+    switch(Index)
+    {
+        case 0:return "trace / orb";case 1:return "trace";case 2:return "bullet";
+        case 3:return "plasma / beam time";case 4:return "rocket / grenade";
+        case 5:return "fragment / shell";case 6:return "trace";case 7:return "glob";
+        case 8:return "blade";case 9:return "trace";case 10:return "warhead";
+    }
+    return "emission";
 }
 function GiveTrainingWeapon(UTATPlayer P, int Index)
 {
@@ -102,7 +114,7 @@ function GiveTrainingWeapon(UTATPlayer P, int Index)
     local Weapon W;
     local class<Weapon> WC;
     if (Running || P == None) return;
-    Index = Clamp(Index,0,5);
+    Index = Clamp(Index,0,10);
     for (I=P.Inventory; I!=None; I=N)
     {
         N=I.Inventory;
@@ -111,15 +123,7 @@ function GiveTrainingWeapon(UTATPlayer P, int Index)
     }
     P.Weapon=None;
     P.PendingWeapon=None;
-    switch(Index)
-    {
-        case 0: WC=class'UTATShock'; break;
-        case 1: WC=class'UTATSniper'; break;
-        case 2: WC=class'UTATMinigun'; break;
-        case 3: WC=class'UTATPulse'; break;
-        case 4: WC=class'UTATRocketLauncher'; break;
-        case 5: WC=class'UTATFlak'; break;
-    }
+    WC=class<Weapon>(DynamicLoadObject("UTAT.LC"$class'UTATWeaponCatalog'.static.Key(Index),class'Class'));
     W=Spawn(WC);
     if (W == None) return;
     W.GiveTo(P);
@@ -228,7 +232,7 @@ function StartSession(UTATPlayer P)
     ExerciseMode=P.Settings.Exercise;
     SessionDuration=P.Settings.Duration;
     StartedAt=Level.TimeSeconds;
-    RoundElapsed=0;
+    RoundElapsed=0;BeamActive=0;BeamContact=0;
     HasResult=False; ResultsDismissed=False;
     Running=True;
     for (I=0; I<3; I++)
@@ -258,7 +262,7 @@ function bool AcceptDamage(UTATTarget T, int Damage)
 {
     if (!Running || Damage<=0 || ActiveShot==None || ActiveShot.Trainer!=Self
         || ActiveShot.RoundId!=RoundId || (SessionDuration>0 && RoundElapsed>=SessionDuration)) return False;
-    if (!ActiveShot.Hit)
+    if (!ActiveShot.Hit && !ActiveShot.Beam)
     {
         ActiveShot.Hit=True;
         Hits++;
@@ -321,9 +325,9 @@ function FinishSession(bool Complete)
     foreach AllActors(class'Projectile',P)
         if (P.Instigator==Trainee) P.Destroy();
     Record="RESULT|version=2|complete="$Complete$"|exercise="$ExerciseMode
-        $"|protocol=primary-units-v2|weapon="$WeaponLabel(WeaponIndex)$"|unit="$UnitLabel(WeaponIndex)
+        $"|protocol=all-fire-units-v3|weapon="$WeaponLabel(WeaponIndex)$"|unit="$UnitLabel(WeaponIndex)
         $"|sequence=random-v1|seed="$RoundSeed$"|duration="$SessionDuration$"|elapsed="$LastElapsed$"|shots="$Shots$"|hits="$Hits
-        $"|kills="$Eliminations$"|damage="$DamageDealt$"|mean_ms=0|map="$string(Level.Outer.Name)
+        $"|beam_active="$BeamActive$"|beam_contact="$BeamContact$"|kills="$Eliminations$"|damage="$DamageDealt$"|mean_ms=0|map="$string(Level.Outer.Name)
         $"|anchor="$string(Anchor)$"|yaw="$AnchorRotation.Yaw$"|input=unverified|"$Snapshot;
     Log(Record,'UTAT');
     LastSummary="Accuracy "$int(AccuracyPercent())$"% | Hits "$Hits$" / "$Shots$" | Eliminations "$Eliminations;

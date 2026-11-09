@@ -1,6 +1,6 @@
-# 0.3.0 regression evidence
+# Dedicated-engine regression — 0.4.0
 
-Linux 469e dedicated engine. Real mod/map/weapon/session logic; synthetic trainee without a viewport. Does not validate physical input or rendering.
+Linux 469e. Native engine/viewport callbacks; physical mouse and visual acceptance remain separate. Dedicated tests use a synthetic pawn without a Player connection.
 
 ```text
 PASS room marker exists
