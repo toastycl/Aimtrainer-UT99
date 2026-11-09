@@ -10,8 +10,8 @@ class NetworkSession:
     def __post_init__(self):
         if self.weapon not in ('Shock','Sniper'):
             raise ValueError('Weapon must be Shock or Sniper in this WIP')
-        if type(self.added_rtt_ms) is not int or not 0 <= self.added_rtt_ms <= 2000:
-            raise ValueError('Added RTT must be a whole number from 0 to 2000 ms')
+        if type(self.added_rtt_ms) is not int or not 0 <= self.added_rtt_ms <= 300:
+            raise ValueError('Added RTT must be a whole number from 0 to 300 ms')
 
     def url_options(self):
         return f'?LabWeapon={self.weapon}?AddedRTT={self.added_rtt_ms}'

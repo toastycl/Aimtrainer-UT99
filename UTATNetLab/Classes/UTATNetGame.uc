@@ -8,7 +8,7 @@ function InitGame(string Options,out string Error)
 {
     Super.InitGame(Options,Error);
     ManualLab=HasOption(Options,"ManualLab");
-    RequestedRTT=Clamp(GetIntOption(Options,"AddedRTT",100),0,2000);
+    RequestedRTT=Clamp(GetIntOption(Options,"AddedRTT",100),0,300);
     LabWeapon=ParseOption(Options,"LabWeapon");
     if(!(LabWeapon~="Sniper")) LabWeapon="Shock";
     InitialBots=0; MinPlayers=0; RemainingBots=0; bTournament=False;

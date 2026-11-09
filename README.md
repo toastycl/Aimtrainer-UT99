@@ -62,7 +62,7 @@ Keep DPI, FOV, renderer and FPS conditions consistent when comparing settings. O
 
 **In development:** [implementation plan and contributor handoff](docs/WIP_SELECTABLE_PING.md). The normal 0.3.1 trainer does not yet include an in-game ping field.
 
-The external WIP launcher accepts **any integer added RTT from 0 to 2000 ms**, including 37, 85, 112 or 143; it is not limited to preset values. It starts a private localhost IGPlus client/server sandbox and leaves aiming/firing to you. Network rounds and accuracy scoring are pending.
+The external WIP launcher accepts **any integer added RTT from 0 to 300 ms**, including 37, 85, 112 or 143; it is not limited to preset values. It starts a private localhost IGPlus client/server sandbox and leaves aiming/firing to you. Network rounds and accuracy scoring are pending.
 
 After building the base mod and WIP lab with the separate official IGPlus 11 dependencies:
 

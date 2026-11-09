@@ -25,7 +25,7 @@ The normal compiled trainer **does not yet offer in-game latency selection**. Do
 
 ## Agreed behavior
 
-- Free numeric input, initially **0–2000 ms in 1 ms increments**. Values such as 37, 85, 112 and 143 must survive validation and reach the relay unchanged. These bounds are an initial engineering guardrail, not a menu of presets.
+- Free numeric input, initially **0–300 ms in 1 ms increments**. Values such as 37, 85, 112 and 143 must survive validation and reach the relay unchanged. These bounds are an initial engineering guardrail, not a menu of presets.
 - The value means **added round-trip delay**: 85 ms adds 42.5 ms each way. It is not an exact target for scoreboard ping, and it cannot reduce baseline latency.
 - Show requested added RTT and measured RTT as distinct values. The current measurement is a frame/tick-sensitive client-clock RPC estimate, not hardware latency or certified wire RTT.
 - Allow changes between rounds. Mid-round changes must be blocked until lifecycle and timing behavior are explicitly designed. Current WIP changes take effect by closing and relaunching the sandbox.

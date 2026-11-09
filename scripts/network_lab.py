@@ -19,11 +19,11 @@ def choose_session(weapon=None,rtt_ms=None,read=input):
     if weapon not in ('Shock','Sniper'):raise ValueError('Weapon must be Shock or Sniper in this WIP')
     if rtt_ms is None:
         while True:
-            value=read('Added round-trip delay in ms [0..2000, default 100]: ').strip() or '100'
+            value=read('Added round-trip delay in ms [0..300, default 100]: ').strip() or '100'
             try:
                 rtt_ms=int(value);NetworkSession(weapon,rtt_ms);break
             except ValueError:
-                print('Enter a whole number from 0 to 2000, for example 37, 85, 112 or 143.')
+                print('Enter a whole number from 0 to 300, for example 37, 85, 112 or 143.')
     return NetworkSession(weapon,rtt_ms)
 
 def build_command(ut_root,session,offscreen=False):

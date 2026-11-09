@@ -42,7 +42,7 @@ def main():
     p.add_argument('--listen-port',type=int,default=18777);p.add_argument('--server-port',type=int,default=17777)
     p.add_argument('--rtt-ms',type=float,default=100);a=p.parse_args()
     if not 1<=a.listen_port<=65535 or not 1<=a.server_port<=65535 or a.listen_port==a.server_port:p.error('Use distinct valid ports')
-    if not 0<=a.rtt_ms<=2000:p.error('RTT must be between 0 and 2000 ms')
+    if not 0<=a.rtt_ms<=300:p.error('RTT must be between 0 and 300 ms')
     try:asyncio.run(run(a.listen_port,a.server_port,a.rtt_ms))
     except KeyboardInterrupt:pass
 if __name__=='__main__':main()
