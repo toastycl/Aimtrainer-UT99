@@ -4,6 +4,7 @@ simulated function PostRender(Canvas C)
     local UTATPlayer P;
     local UTATGame G;
     local string TimeText;
+    local float BoxX, BoxY, BoxW;
     Super.PostRender(C);
     P=UTATPlayer(PlayerOwner);
     if(P==None) return;
@@ -17,10 +18,25 @@ simulated function PostRender(Canvas C)
     if(!G.Running)
     {
         C.DrawText("Mods > UT99 Aimtrainer or console: AimMenu");
-        C.SetPos(20,64); C.DrawText(G.LastSummary); return;
+        C.SetPos(20,64); C.DrawText(G.LastSummary);
+        if(G.HasResult)
+        {
+            BoxW=FMin(540,C.ClipX-40); BoxX=(C.ClipX-BoxW)/2; BoxY=C.ClipY*0.30;
+            C.DrawColor.R=30; C.DrawColor.G=35; C.DrawColor.B=45;
+            C.SetPos(BoxX,BoxY); C.DrawTile(Texture'UTAT.TrainingWall',BoxW,210,0,0,128,128);
+            C.DrawColor.R=255; C.DrawColor.G=213; C.DrawColor.B=74;
+            C.Font=C.LargeFont; C.SetPos(BoxX+18,BoxY+14); C.DrawText("ROUND RESULTS");
+            C.Font=C.MedFont; C.DrawColor.R=240; C.DrawColor.G=245; C.DrawColor.B=255;
+            C.SetPos(BoxX+18,BoxY+52); C.DrawText("Accuracy: "$int(G.AccuracyPercent())$"%");
+            C.SetPos(BoxX+18,BoxY+78); C.DrawText("Hits / emitted units: "$G.Hits$" / "$G.Shots);
+            C.SetPos(BoxX+18,BoxY+104); C.DrawText("Eliminations: "$G.Eliminations$" | Time: "$int(G.LastElapsed)$"s");
+            C.SetPos(BoxX+18,BoxY+130); C.DrawText("Unit: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex));
+            C.SetPos(BoxX+18,BoxY+164); C.DrawText("AimRestart: replay | AimMenu: choose weapon / mode");
+        }
+        return;
     }
     TimeText="FREE PRACTICE";
-    if(G.SessionDuration>0) TimeText=string(int(FMax(0,G.SessionDuration-(Level.TimeSeconds-G.StartedAt))))$"s left";
+    if(G.SessionDuration>0) TimeText=string(int(FMax(0,G.SessionDuration-G.RoundElapsed)))$"s left";
     C.DrawText(class'UTATGame'.static.WeaponLabel(G.WeaponIndex)$" | "$TimeText);
     C.SetPos(20,64); C.DrawText("Accuracy "$int(G.AccuracyPercent())$"% | Hits "$G.Hits$" / "$G.Shots$" | Eliminations "$G.Eliminations);
     C.SetPos(20,86); C.DrawText("Units: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex)$" | AimFinish: score | AimRestart: repeat");

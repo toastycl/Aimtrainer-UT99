@@ -24,3 +24,13 @@
 ## Later
 
 Online lab with server-confirmed hits, replication and netcode/anticheat compatibility. Manual installation only; no automatic changes to live servers.
+
+## 0.2.1 — tester-reported regressions
+
+- [x] Separate player staging/round position from targets.
+- [x] Disable inherited combat bots, tournament readiness and DM match ending.
+- [x] True infinite ammo without depending on round tick/refill.
+- [x] Independent active-play clock honoring selected seconds.
+- [x] Manual Finish, automatic timed result, replay and persistent result HUD.
+- [x] Run actual Linux viewport/UWindow callback integration with a 30-second round.
+- [ ] Verify the corrected flow manually on the tester's client and mouse hardware.

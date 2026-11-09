@@ -12,3 +12,13 @@
 10. Confirm settings, bindings and normal gameplay after leaving the map and restarting the client.
 
 The opt-in dedicated-engine smoke harness tests real map/weapon/score logic without a rendered client. It is not proof of menu rendering or mouse behavior. Do not recommend daily use until the above acceptance checks pass.
+
+## 0.2.1 regressions
+
+- With your normal DM settings still enabling bots, launch the room and verify no combat bots appear. Do not clear your personal ini files.
+- Confirm initial staging at the left side, round start on the player line and three targets in their separate area.
+- Fire each weapon before and during a round. Ammo should remain at 999 without pickups/reloads.
+- Select 30 seconds, click Start and play until automatic results appear. Opening the menu deliberately pauses active practice; Start/Replay must resume it.
+- During another round, open controls and choose Finish and show score. The score should update immediately. Close controls and verify the persistent result HUD.
+- Repeat several times. Counters reset; there should be only one controls window and no old projectiles.
+- Developer integration: `python scripts/client_smoke.py --ut-root /path/to/UT --offscreen` on Linux with a working SDL offscreen renderer, or omit --offscreen for a normal client. This requires a complete game installation and runs a 30-second viewport test.

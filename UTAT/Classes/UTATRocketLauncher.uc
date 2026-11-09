@@ -5,5 +5,6 @@ function AltFire(float Value)
 }
 defaultproperties
 {
+    AmmoName=Class'UTAT.UTATAmmoRocket'
     bCanThrow=False
 }

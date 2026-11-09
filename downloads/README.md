@@ -1,7 +1,9 @@
-# Test build 0.2.0
+# Test build 0.2.1
 
-[Download compiled mod + map](UTAT-alpha-0.2.0.zip?raw=true). Extract into a test UT99 469e installation, keeping System and Maps. See ../docs/QUICKSTART_ES.md.
+[Download compiled mod + map](UTAT-alpha-0.2.1.zip?raw=true). Replace both System files and the Maps file with UT closed; retain your personal ini files. See [Spanish guide](../docs/QUICKSTART_ES.md).
 
-Contains only this project's compiled mod, generated room and Spanish guide. No original UT game packages are included. Binary build is an alpha: rendered menu/input acceptance remains pending. Source and toolchain validation are documented in ../docs/VALIDATION.md.
+Fixes separate spawn/target positions, inherited combat bots/warmup, infinite ammo, round timing, manual finish and retained result display. Own mod/map only; no original game packages included.
 
-SHA-256: `9ca8076e4ac317fdd6115af5002283266ff57dcfea3e6a353e737f2a0fc0d652`.
+Standalone viewport/UWindow callbacks were validated on Linux with a 30-second round. Manual visual/hardware and Windows/macOS-specific acceptance remain pending. See [validation](../docs/VALIDATION.md).
+
+SHA-256: `c72c87630e984e6445fd20654eae957e9a5d2624fcca02155feedc3bedb5c9c5`.

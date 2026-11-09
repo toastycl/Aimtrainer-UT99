@@ -3,18 +3,26 @@ var UTATPlayer Trainee;
 var UTATTarget Targets[3];
 var UTATShot ActiveShot;
 var UTATRoomInfo Room;
+var UTATRoundController RoundController;
+var float RoundElapsed;
 var bool Running, HasResult, LastComplete;
 var int Shots, Hits, Eliminations, DamageDealt, RoundId, ExerciseMode, SessionDuration, WeaponIndex;
 var float StartedAt, LastElapsed, SessionFOV;
 var vector Anchor, ForwardAxis, SideAxis;
 var rotator AnchorRotation;
 var string Snapshot, LastSummary;
-var bool SmokeTest;
+var bool SmokeTest, ClientTest;
 
 function InitGame(string Options, out string Error)
 {
     Super.InitGame(Options, Error);
     SmokeTest = HasOption(Options, "SmokeTest");
+    ClientTest = HasOption(Options, "ClientTest");
+    // Global DeathMatch bot/tournament preferences must never populate the room.
+    MinPlayers=0; InitialBots=0; RemainingBots=0;
+    bTournament=False; bRatedGame=False; bRequireReady=False; bNetReady=False;
+    CountDown=0; TimeLimit=0; FragLimit=0; RemainingTime=0;
+    MaxPlayers=1; bRestartLevel=False;
 }
 event PlayerPawn Login(string Portal, string Options, out string Error, class<PlayerPawn> SpawnClass)
 {
@@ -28,12 +36,37 @@ event PlayerPawn Login(string Portal, string Options, out string Error, class<Pl
 function PostBeginPlay()
 {
     local Inventory I;
+    InitialBots=0; MinPlayers=0;
     Super.PostBeginPlay();
+    RemainingBots=0; bRequireReady=False; bNetReady=False; CountDown=0;
     foreach AllActors(class'Inventory', I)
         if (I.Owner == None) I.Destroy();
     foreach AllActors(class'UTATRoomInfo', Room) break;
     Spawn(class'UTATProjectileNotify');
+    RoundController=Spawn(class'UTATRoundController');
+    if(RoundController!=None) RoundController.Trainer=Self;
     if (SmokeTest) Spawn(class'UTATSmokeTest');
+    if (ClientTest) Spawn(class'UTATClientTest');
+}
+// This lab never enters DeathMatch ready/bot-fill/end-match logic.
+function Timer() { SentText=0; }
+function bool AddBot() { return False; }
+function bool ForceAddBot() { return False; }
+function bool NeedPlayers() { return False; }
+function int ReduceDamage(int Damage,name DamageType,Pawn Injured,Pawn InstigatedBy)
+{
+    if(UTATPlayer(Injured)!=None) return 0;
+    return Super.ReduceDamage(Damage,DamageType,Injured,InstigatedBy);
+}
+event PostLogin(PlayerPawn NewPlayer)
+{
+    RemainingBots=0;
+    Super.PostLogin(NewPlayer);
+    if(UTATPlayer(NewPlayer)!=None)
+    {
+        Trainee=UTATPlayer(NewPlayer);
+        Trainee.ClientMessage("Practice room ready. Open Mods > UT99 Aimtrainer to start a round.");
+    }
 }
 static function string WeaponLabel(int Index)
 {
@@ -82,6 +115,7 @@ function GiveTrainingWeapon(UTATPlayer P, int Index)
     if (W == None) return;
     W.GiveTo(P);
     W.GiveAmmo(P);
+    if(W.AmmoType!=None) W.AmmoType.AmmoAmount=W.AmmoType.MaxAmmo;
     W.SetSwitchPriority(P);
     W.WeaponSet(P);
     P.Weapon=W;
@@ -105,7 +139,12 @@ function StartSession(UTATPlayer P)
 {
     local vector Z, Pos;
     local int I;
-    if (Running || P == None || P.Health<=0) return;
+    if(Running || P==None) return;
+    if(P.Health<=0)
+    {
+        LastSummary="Respawn first, then start a training round.";
+        P.ClientMessage(LastSummary); return;
+    }
     P.EnsureSettings();
     Trainee=P;
     GiveTrainingWeapon(P,P.Settings.WeaponIndex);
@@ -137,11 +176,13 @@ function StartSession(UTATPlayer P)
     ExerciseMode=P.Settings.Exercise;
     SessionDuration=P.Settings.Duration;
     StartedAt=Level.TimeSeconds;
+    RoundElapsed=0;
     HasResult=False;
     Running=True;
     for (I=0; I<3; I++)
     {
-        Pos=Anchor+900*ForwardAxis+(I-1)*240*SideAxis;
+        if(Room!=None) Pos=Room.TargetOrigin+(I-1)*240*SideAxis;
+        else Pos=Anchor+1100*ForwardAxis+(I-1)*240*SideAxis;
         Targets[I]=Spawn(class'UTATTarget',,,Pos,rotator(-ForwardAxis));
         if (Targets[I]==None || !FastTrace(Pos,Anchor))
         {
@@ -153,13 +194,15 @@ function StartSession(UTATPlayer P)
         Targets[I].HomePosition=Pos;
         Targets[I].Index=I;
     }
-    P.Health=1999;
-    P.ClientMessage("Training started. AimFinish ends and shows results; AimRestart repeats.");
+    P.Health=100;
+    P.SetPause(False);
+    P.ClientMessage("ROUND STARTED | duration "$SessionDuration$"s (0=free) | unlimited ammo");
+    P.ClientMessage("AimFinish: result | AimRestart: repeat | AimMenu: controls");
 }
 function UTATShot NewShot()
 {
     local UTATShot S;
-    if (!Running || (SessionDuration>0 && Level.TimeSeconds-StartedAt>=SessionDuration)) return None;
+    if (!Running || (SessionDuration>0 && RoundElapsed>=SessionDuration)) return None;
     S=new(None) class'UTATShot';
     S.Trainer=Self; S.RoundId=RoundId;
     Shots++;
@@ -168,7 +211,7 @@ function UTATShot NewShot()
 function bool AcceptDamage(UTATTarget T, int Damage)
 {
     if (!Running || Damage<=0 || ActiveShot==None || ActiveShot.Trainer!=Self
-        || ActiveShot.RoundId!=RoundId || (SessionDuration>0 && Level.TimeSeconds-StartedAt>=SessionDuration)) return False;
+        || ActiveShot.RoundId!=RoundId || (SessionDuration>0 && RoundElapsed>=SessionDuration)) return False;
     if (!ActiveShot.Hit)
     {
         ActiveShot.Hit=True;
@@ -177,7 +220,7 @@ function bool AcceptDamage(UTATTarget T, int Damage)
     DamageDealt+=Min(Damage,T.Health);
     return True;
 }
-function Tick(float Delta)
+function UpdateRound(float Delta)
 {
     local int I;
     local float Age;
@@ -187,10 +230,9 @@ function Tick(float Delta)
     {
         FinishSession(False); return;
     }
-    Trainee.Health=1999;
-    if (Trainee.Weapon!=None && Trainee.Weapon.AmmoType!=None)
-        Trainee.Weapon.AmmoType.AmmoAmount=Min(50,Trainee.Weapon.AmmoType.MaxAmmo);
-    Age=Level.TimeSeconds-StartedAt;
+    Trainee.Health=100;
+    RoundElapsed+=Delta/FMax(0.01,Level.TimeDilation);
+    Age=RoundElapsed;
     if (SessionDuration>0 && Age>=SessionDuration)
     {
         FinishSession(True); return;
@@ -221,7 +263,7 @@ function FinishSession(bool Complete)
     local string Record;
     if (!Running) return;
     Running=False;
-    LastElapsed=FMax(0,Level.TimeSeconds-StartedAt);
+    LastElapsed=FMax(0,RoundElapsed);
     if (SessionDuration>0) LastElapsed=FMin(SessionDuration,LastElapsed);
     if(Complete && SessionDuration>0 && LastElapsed<SessionDuration) Complete=False;
     LastComplete=Complete;

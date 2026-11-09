@@ -13,3 +13,11 @@ The included T3D room is rebuilt to a real .unr by UCC exec. Own grid textures a
 Result schema v2 includes weapon, emission unit, eliminations and damage. The exporter supports legacy v1, separates weapon/scenario groups, and handles free practice. Continuous multi-target rounds do not claim a time-to-hit metric. Input backend and hardware latency are unverified.
 
 `UTATSmokeTest`, enabled only by explicit ?SmokeTest=1, exercises engine map/round/weapon behavior without a rendered client. It does not validate UWindow rendering, mouse feel or real player input. Online player login remains disabled.
+
+## 0.2.1 lifecycle fixes
+
+InitGame/PostBeginPlay clear inherited DM bot/tournament/warmup preferences in memory, and AddBot/ForceAddBot/NeedPlayers are disabled. The level's trainee PlayerStart is a staging point separate from the round anchor and target origin. Training-player damage/telefrag protection prevents practice deaths.
+
+UTATAmmo* classes override UseAmmo, retaining 999 units independently of round updates. UTATRoundController owns round updates instead of relying on GameInfo match ticking. Delta is divided by TimeDilation for real active-play seconds. Menu pause remains explicit; Start/Replay closes the menu and unpauses.
+
+The controls window is unique/reused. If the UWindow root has not yet been created, opening is deferred until the console creates it. Finish is idempotent and results remain in the HUD after the menu closes. UTATClientTest drives a real standalone viewport and the actual UWindow callbacks, including a selected 30-second round, manual finish and replay.

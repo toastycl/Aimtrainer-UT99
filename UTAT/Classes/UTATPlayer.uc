@@ -1,6 +1,7 @@
 class UTATPlayer extends TMale2;
 
 var UTATStore Settings;
+var bool PendingTrainingPanel;
 var float OriginalSensitivity, OriginalThreshold;
 var bool OriginalNoSmoothing, OriginalMaxSmoothing, HasOriginal;
 
@@ -124,9 +125,26 @@ function ShowTrainingPanel()
     local WindowConsole WC;
     if (Player == None) return;
     WC=WindowConsole(Player.Console);
-    if(WC==None || WC.Root==None) return;
+    if(WC==None) return;
     WC.LaunchUWindow();
-    WC.Root.CreateWindow(class'UTATWindow',40,40,440,420);
+    if(WC.Root==None) { PendingTrainingPanel=True; return; }
+    PendingTrainingPanel=False;
+    WC.Root.CreateWindow(class'UTATWindow',40,40,440,420,,True);
+}
+function ResumeTraining()
+{
+    local WindowConsole WC;
+    if(Player!=None)
+    {
+        WC=WindowConsole(Player.Console);
+        if(WC!=None) WC.CloseUWindow();
+    }
+    SetPause(False);
+}
+// No other pawn can telefrag the trainee in this local practice lab.
+event EncroachedBy(Actor Other)
+{
+    if(UTATGame(Level.Game)==None) Super.EncroachedBy(Other);
 }
 exec function AimWeapon(int Index)
 {

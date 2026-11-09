@@ -21,6 +21,8 @@ function Timer()
     if(Step==0)
     {
         Check(G.Room!=None,"room marker exists");
+        Check(G.InitialBots==0 && G.MinPlayers==0 && !G.bRequireReady,"DeathMatch preferences cannot populate or stall lab");
+        Check(!G.AddBot() && !G.ForceAddBot() && !G.NeedPlayers(),"combat bot insertion disabled");
         if(G.Room==None) { ConsoleCommand("exit"); return; }
         P=Spawn(class'UTATPlayer',,,G.Room.Location);
         Check(P!=None,"player fits inside map");
@@ -37,12 +39,17 @@ function Timer()
             P.Settings.Exercise=0;
             G.StartSession(P);
             Check(G.Running && G.Targets[0]!=None && G.Targets[2]!=None,"round starts with three targets");
+            Check(VSize(P.Location-G.Targets[1].Location)>1300,"trainee and target starts are separated");
+            Check(P.Weapon.AmmoType.UseAmmo(2000) && P.Weapon.AmmoType.AmmoAmount==999,"infinite ammo independent from round tick");
+            if(WeaponId==5) P.SetLocation(P.Location+1000*G.ForwardAxis);
+            else P.SetLocation(P.Location+600*G.ForwardAxis);
             P.ViewRotation=rot(0,0,0);
             P.Weapon.GotoState('Idle');
             P.Weapon.Fire(0);
         }
         else
         {
+            Check(P.Weapon.AmmoType.AmmoAmount==999,"infinite ammo survives round updates");
             Check(G.Shots>0,"emissions counted: "$G.WeaponLabel(WeaponId));
             Check(G.Hits>0,"real weapon hits target: "$G.WeaponLabel(WeaponId));
             Check(G.Hits<=G.Shots,"accuracy bounded: "$G.WeaponLabel(WeaponId));

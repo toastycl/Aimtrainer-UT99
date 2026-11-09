@@ -14,5 +14,6 @@ function TraceFire(float Accuracy)
 }
 defaultproperties
 {
+    AmmoName=Class'UTAT.UTATAmmoMinigun'
     bCanThrow=False
 }

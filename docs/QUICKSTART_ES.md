@@ -1,4 +1,4 @@
-# Aimtrainer UT99 0.2.0 — sala de práctica
+# Aimtrainer UT99 0.2.1 — sala de práctica
 
 ## Instalar el ZIP compilado
 
@@ -39,3 +39,13 @@ Usa tu configuración habitual. No necesitas perfiles. Ajusta DPI desde el mouse
 `AimRestart` reinicia la ronda; `AimStop` cancela. `AimFinish` muestra el resultado; si terminas antes del tiempo elegido, verás el score pero esa ronda no entra a la comparación de rondas completas. En práctica libre puedes terminar cuando quieras.
 
 La prueba visual/jugable del menú y del mouse en tu cliente sigue siendo necesaria. Consulta `docs/VALIDATION.md` para conocer las verificaciones exactas.
+
+## Correcciones 0.2.1
+
+Reemplaza **los tres archivos**, incluido el mapa, con UT cerrado. No hace falta borrar User.ini ni UnrealTournament.ini.
+
+El jugador aparece en un punto lateral de espera y al iniciar pasa a su línea de tiro. Los blancos tienen su propio origen, a distancia. Los bots de DeathMatch se bloquean aunque tu configuración normal tenga bots habilitados. El jugador está protegido del daño de práctica y de telefrags.
+
+La munición es infinita desde que recibes el arma; el HUD stock muestra 999. No depende de recargas ni del estado de la ronda.
+
+El tiempo seleccionado cuenta segundos reales de juego activo, ajustados por la velocidad de juego. Abrir el menú pausa la práctica; al iniciar o repetir se reanuda explícitamente. Al terminar se abre el panel de resultados. Al cerrar el menú quedan las estadísticas en el HUD. `AimFinish` y el botón “Finish and show score” finalizan por el mismo método.

@@ -29,8 +29,9 @@ function Created()
     ExerciseControl.AddItem("Static characters");
     ExerciseControl.AddItem("Moving / lateral strafe");
     DurationControl=AddChoice(158,"Round");
-    DurationControl.AddItem("60 seconds"); DurationControl.AddItem("30 seconds");
-    DurationControl.AddItem("120 seconds"); DurationControl.AddItem("Free practice");
+    DurationControl.AddItem("60 seconds","60"); DurationControl.AddItem("30 seconds","30");
+    DurationControl.AddItem("120 seconds","120"); DurationControl.AddItem("Free practice","0");
+    WeaponControl.SetSelectedIndex(0); ExerciseControl.SetSelectedIndex(0); DurationControl.SetSelectedIndex(0);
     if(P!=None)
     {
         P.EnsureSettings();
@@ -70,7 +71,16 @@ function Paint(Canvas C,float X,float Y)
         ClipText(C,16,340,"Unit: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex)$". Splash counted once per projectile.");
         if(!G.LastComplete) ClipText(C,16,360,"Ended early / cancelled - no timed comparison.");
     }
-    else ClipText(C,16,280,"Primary fire. Sniper zoom and Minigun alt are supported.");
+    else if(G.Running)
+    {
+        ClipText(C,16,280,"ROUND RUNNING | elapsed "$int(G.RoundElapsed)$"s");
+        ClipText(C,16,300,"Finish and show score ends the current round.");
+    }
+    else
+    {
+        ClipText(C,16,280,"Primary fire. Unlimited ammunition is always enabled.");
+        ClipText(C,16,300,G.LastSummary);
+    }
 }
 function Notify(UWindowDialogControl C,byte E)
 {
@@ -91,16 +101,11 @@ function Notify(UWindowDialogControl C,byte E)
         if(G.Running) { P.ClientMessage("Finish or cancel the current round first."); return; }
         P.AimWeapon(WeaponControl.GetSelectedIndex());
         P.AimExercise(ExerciseControl.GetSelectedIndex());
-        switch(DurationControl.GetSelectedIndex())
-        {
-            case 1: Duration=30; break;
-            case 2: Duration=120; break;
-            case 3: Duration=0; break;
-            default: Duration=60;
-        }
+        Duration=int(DurationControl.GetValue2());
+        if(DurationControl.GetValue2()=="") Duration=60;
         P.AimDuration(Duration); P.AimStart();
-        ParentWindow.Close(); Root.Console.CloseUWindow();
+        ParentWindow.Close(); P.ResumeTraining();
     }
-    else if(C==FinishButton) { ParentWindow.Close(); P.AimFinish(); }
-    else if(C==CancelButton) { ParentWindow.Close(); P.AimStop(); }
+    else if(C==FinishButton) { P.AimFinish(); }
+    else if(C==CancelButton) { P.AimStop(); }
 }

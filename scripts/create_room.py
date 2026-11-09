@@ -28,8 +28,8 @@ def main():
         out += [f'            Begin Polygon Texture=UTAT.{tex} Flags=4194304 Link={i}', '                Origin '+v(verts[0]),'                Normal '+v(n),'                TextureU '+v(u),'                TextureV '+v(t)]
         out += ['                Vertex '+v(a) for a in verts];out += ['            End Polygon']
     out += ['        End PolyList','    End Brush',"    Brush=Model'RoomModel'",'End Actor']
-    out += ['Begin Actor Class=PlayerStart Name=PlayerStart0','    Location=(X=-1000,Y=0,Z=50)','    Rotation=(Pitch=0,Yaw=0,Roll=0)','End Actor',
-        'Begin Actor Class=UTAT.UTATRoomInfo Name=RoomInfo0','    Location=(X=-1000,Y=0,Z=40)','End Actor']
+    out += ['Begin Actor Class=PlayerStart Name=PlayerStart0','    Location=(X=-1100,Y=-480,Z=50)','    Rotation=(Pitch=0,Yaw=0,Roll=0)','End Actor',
+        'Begin Actor Class=UTAT.UTATRoomInfo Name=RoomInfo0','    Location=(X=-1100,Y=0,Z=40)','End Actor']
     for i,x in enumerate([-1100,0,1100]):
         out += [f'Begin Actor Class=Light Name=Light{i}',f'    Location=(X={x},Y=0,Z=600)','    LightBrightness=200','    LightRadius=64','End Actor']
     out+=['End Map'];(ROOT/'maps'/'DM-UTAT-Room.t3d').write_text('\n'.join(out)+'\n')

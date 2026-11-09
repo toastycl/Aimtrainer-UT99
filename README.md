@@ -2,11 +2,11 @@
 
 A simple **practice-room mod for Unreal Tournament 99**, built for the whole community. Enter the room, choose a classic CTF weapon, shoot static or moving characters, see your accuracy, and play again using your normal mouse settings.
 
-**Version 0.2.0 — testing alpha.** This is a playable-mod implementation under validation, not a finished release. See [validation status](docs/VALIDATION.md) for the checks actually completed.
+**Version 0.2.1 — testing alpha.** This is a playable-mod implementation under validation, not a finished release. See [validation status](docs/VALIDATION.md) for the checks actually completed.
 
 ## Install
 
-[Download the compiled 0.2.0 test ZIP](downloads/UTAT-alpha-0.2.0.zip?raw=true) · [Checksums](downloads/SHA256SUMS)
+[Download the compiled 0.2.1 test ZIP](downloads/UTAT-alpha-0.2.1.zip?raw=true) · [Checksums](downloads/SHA256SUMS)
 
 Extract the compiled alpha ZIP into a **test copy of your UT99 469e installation**, preserving the folders:
 
@@ -30,14 +30,18 @@ In the room, open **Mods → UT99 Aimtrainer** (or console: `AimMenu`). Choose a
 
 ## The room
 
-A small, flat rectangular room with neutral grid textures, one fixed start position and three human-shaped targets. Each round resets you to the start and recreates the targets. Targets have 100 health and respawn after elimination.
+A small, flat rectangular room with neutral grid textures, one fixed start position and three human-shaped targets. Each round resets you to the start and recreates the targets. Targets have 100 health and respawn after elimination. The player has a separate staging/round start and targets have their own fixed origin. Combat bots inherited from DeathMatch settings are disabled.
 
 - **Static characters:** three stationary targets.
 - **Moving characters:** three targets following controlled lateral strafe paths.
-- **30 / 60 / 120 seconds** or **free practice**.
+- **30 / 60 / 120 seconds** or **free practice**. Timed rounds count real seconds of active play; opening the menu pauses practice and Start/Replay explicitly resumes it.
 - You can move, jump and dodge using UT99 movement.
 
 This is a training game type with normal CTF weapons, not a Capture the Flag match. There are no flags to capture or attacking enemy AI.
+
+## Fixes in 0.2.1
+
+Separate player/target starts; no inherited DM bots/warmup; true unlimited ammo; an independent round clock; explicit resume on Start; one reusable control window; and a persistent HUD fallback for results. Replace both System files **and** the map from the new ZIP.
 
 ## Weapons and accuracy
 
@@ -87,19 +91,21 @@ python scripts/build.py --ut-root "/path/to/UnrealTournament"
 py scripts/build.py --ut-root "C:\Games\UnrealTournament" --system System
 ```
 
-The builder compiles `UTAT.u`, imports/rebuilds the included `maps/DM-UTAT-Room.t3d` with UCC's editor commandlet and packages `dist/UTAT-alpha-0.2.0.zip`. The room uses unlit own grid textures, so it does not need GPU lightmap baking. The build writes separate compiler/editor ini files and stages mod source/output in the test installation; it does not edit User.ini or UnrealTournament.ini.
+The builder compiles `UTAT.u`, imports/rebuilds the included `maps/DM-UTAT-Room.t3d` with UCC's editor commandlet and packages `dist/UTAT-alpha-0.2.1.zip`. The room uses unlit own grid textures, so it does not need GPU lightmap baking. The build writes separate compiler/editor ini files and stages mod source/output in the test installation; it does not edit User.ini or UnrealTournament.ini.
 
 The reproducible room/texture generator is `scripts/create_room.py` (requires Pillow). Its generated T3D and PCX inputs are committed; ordinary builds do not need Pillow.
 
 ## Results and checks
 
-The in-game panel shows accuracy, emission counts and eliminations. To export retained game logs:
+The in-game panel shows accuracy, emission counts and eliminations. A persistent result HUD remains visible after closing the menu. Ammunition is truly unlimited through custom ammo classes (stock HUD shows 999), including outside active rounds. To export retained game logs:
 
 ```sh
 python scripts/analyze.py "/path/to/UnrealTournament.log" --out results
 python -m unittest discover -s tests -v
 # Optional engine checks after building (no rendered client):
 python scripts/smoke.py --ut-root "/path/to/UnrealTournament"
+# Optional real viewport/UWindow integration (working client/renderer required):
+python scripts/client_smoke.py --ut-root "/path/to/UnrealTournament"
 ```
 
 `analyze.py` supports v1 and v2 records. Version 2 separates weapon/unit/scenario groups, supports free practice and does not invent a time-to-hit metric for continuous multi-target rounds. Logs can be overwritten when UT restarts: keep a copy. Backend is recorded as unverified. Keep DPI, FOV, renderer and FPS conditions consistent when comparing your settings. This is not a hardware latency measurement.

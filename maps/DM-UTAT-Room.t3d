@@ -81,11 +81,11 @@ Begin Actor Class=Brush Name=TrainingRoom
     Brush=Model'RoomModel'
 End Actor
 Begin Actor Class=PlayerStart Name=PlayerStart0
-    Location=(X=-1000,Y=0,Z=50)
+    Location=(X=-1100,Y=-480,Z=50)
     Rotation=(Pitch=0,Yaw=0,Roll=0)
 End Actor
 Begin Actor Class=UTAT.UTATRoomInfo Name=RoomInfo0
-    Location=(X=-1000,Y=0,Z=40)
+    Location=(X=-1100,Y=0,Z=40)
 End Actor
 Begin Actor Class=Light Name=Light0
     Location=(X=-1100,Y=0,Z=600)
