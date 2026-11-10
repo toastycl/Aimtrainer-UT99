@@ -1,4 +1,4 @@
-# Standalone architecture — 0.5.0
+# Standalone architecture — 1.0.0
 
 UTATGame/UTATPlayer own a local room. Native UWindow controls select weapon, exercise, distance, size and duration, pass them across map travel and start the round. UTATRoundController advances only active unpaused play time. Native projectile/trace adapters preserve classic weapons and emission accounting.
 

@@ -1,4 +1,4 @@
-# Manual acceptance — standalone 0.5.0
+# Manual acceptance — standalone 1.0.0
 
 1. Close a test UT99 469e installation and replace the mod/int/map, preserving ini files. Open UT normally, Mods → UT99 Aimtrainer.
 2. Choose Sniper, Random aerial, Medium, Normal, 30 seconds. Start with the only Start button. Confirm elevated dummies spawn/move and can be shot. Confirm timer ends and results stay over the room. Release fire then use fresh primary fire to return to setup.

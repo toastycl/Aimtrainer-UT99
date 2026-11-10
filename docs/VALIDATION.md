@@ -1,4 +1,4 @@
-# Validation — standalone development build 0.5.0
+# Validation — standalone version 1.0.0
 
 | Check | Result |
 | --- | --- |
@@ -19,4 +19,4 @@ Toolchain: OldUnreal 469e Linux amd64, SDL offscreen/Mesa llvmpipe for viewport 
 
 Projectile/trace accuracy and Pulse beam contact remain separate. History records observed fire input, settings and completion; it does not detect DPI or recommend a best sensitivity. The exporter keeps distance, size and fire style in separate cohorts and still imports older logs. Random start/layout remains a source of trial variation.
 
-IGPlus/ping/helpers remain deferred and excluded from the active package. Original game assets/toolchain remain external and are not distributed. No live server deployment or GitHub Release was performed.
+IGPlus/ping/helpers remain deferred and excluded from the active package. Original game assets/toolchain remain external and are not distributed. The v1.0.0 package is prepared for manual GitHub Release publication by the maintainer. No live server deployment was performed.

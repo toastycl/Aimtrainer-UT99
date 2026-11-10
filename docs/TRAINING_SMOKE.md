@@ -1,4 +1,4 @@
-# Target geometry, movement and history — 0.5.0
+# Target geometry, movement and history — 1.0.0
 
 199 checks passing on OldUnreal 469e Linux amd64. Native engine/viewport callbacks are separate from physical mouse, visual and platform acceptance. Developer test fixtures are opt-in only.
 

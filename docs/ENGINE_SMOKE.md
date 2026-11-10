@@ -1,4 +1,4 @@
-# Dedicated engine regression — 0.5.0
+# Dedicated engine regression — 1.0.0
 
 52 checks passing on OldUnreal 469e Linux amd64. Native engine/viewport callbacks are separate from physical mouse, visual and platform acceptance. Developer test fixtures are opt-in only.
 

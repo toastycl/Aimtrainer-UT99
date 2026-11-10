@@ -1,6 +1,6 @@
 # Roadmap — standalone training
 
-## Implemented in 0.5.0
+## Implemented in 1.0.0
 
 - Native UT setup, one Start button, eleven damage weapons and both fire modes.
 - Static/strafe/evasive/random aerial targets, collision-scaled normal/small/large sizes.

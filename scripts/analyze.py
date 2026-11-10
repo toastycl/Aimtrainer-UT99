@@ -10,7 +10,7 @@ from pathlib import Path
 from statistics import mean, pstdev
 
 REQUIRED = ('version','complete','protocol','exercise','sequence','duration','elapsed','shots','hits','mean_ms','map','anchor','yaw','input','sens','nosmooth','maxsmooth','threshold','fov','profile')
-# Input remains unverified in alpha: do not infer backend from a profile name.
+# Input remains unverified: do not infer backend from a profile name.
 COHORT = ('protocol','weapon','unit','exercise','sequence','duration','map','anchor','yaw','fov','distance','size','fire_style')
 CONFIG = ('profile','sens','nosmooth','maxsmooth','threshold','input')
 

@@ -1,8 +1,8 @@
-# Aimtrainer UT99 0.5.0 — instalar y jugar
+# Aimtrainer UT99 1.0.0 — instalar y jugar
 
 Esta versión vuelve al entrenamiento local dentro de UT. **No requiere Python, IGPlus ni programas auxiliares.**
 
-1. Cierra UT y extrae `UTAT-standalone-0.5.0.zip` en una copia de UT99 469e, conservando las carpetas.
+1. Cierra UT y extrae `UTAT-1.0.0.zip` en una copia de UT99 469e, conservando las carpetas.
 2. Reemplaza `System/UTAT.u`, `System/UTAT.int` y `Maps/DM-UTAT-Room.unr`. No borres tus ini.
 3. Abre el juego normalmente y entra a **Mods → UT99 Aimtrainer**.
 4. Elige arma, tipo de blanco, distancia, tamaño y duración. Pulsa **Start training**.
@@ -16,7 +16,7 @@ El accuracy cuenta trazas/balas, proyectiles o fragmentos según el disparo. El 
 
 - **Static:** blancos quietos.
 - **Lateral strafe:** movimiento lateral.
-- **Evasive / jumps:** cambios de dirección/velocidad y saltos y aceleraciones tipo dodge simulados.
+- **Evasive / jumps:** cambios de dirección/velocidad y saltos y aceleraciones tipo dodge, todos simulados.
 - **Random aerial:** posiciones y trayectorias aleatorias en el aire.
 - **Distance:** Mixed, Close, Medium o Far. Son bandas horizontales desde tu posición inicial, no metros ni una distancia fija mientras te mueves.
 - **Target size:** Normal, Small (60%) o Large (140%). Cambian el modelo y su cilindro de impacto.

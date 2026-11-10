@@ -236,7 +236,7 @@ function RestoreOriginal()
 exec function AimInput()
 {
     // Inspection only. A backend switch/restart workflow is a later milestone.
-    ClientMessage("Input backend is not controlled or verified by this alpha.");
+    ClientMessage("Input backend is not controlled or verified by this version.");
     ClientMessage("Inspect Options > Preferences > Input and record it with your results.");
 }
 
