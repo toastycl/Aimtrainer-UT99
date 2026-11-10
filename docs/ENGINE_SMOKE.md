@@ -1,6 +1,6 @@
-# Dedicated-engine regression — 0.4.0
+# Dedicated-engine regression — 0.4.1
 
-Linux 469e. Native engine/viewport callbacks; physical mouse and visual acceptance remain separate. Dedicated tests use a synthetic pawn without a Player connection.
+Linux 469e, isolated native engine. Uses a synthetic pawn without a Player connection; physical input and visual acceptance remain separate.
 
 ```text
 PASS room marker exists

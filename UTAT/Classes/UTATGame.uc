@@ -13,7 +13,7 @@ var float StartedAt, LastElapsed, SessionFOV;
 var vector Anchor, ForwardAxis, SideAxis;
 var rotator AnchorRotation;
 var string Snapshot, LastSummary;
-var bool SmokeTest, ClientTest,OpenSetup,MenuNetworkTest,NetworkReturnTest,ArsenalTest,ArsenalAlt;
+var bool SmokeTest, ClientTest,OpenSetup,ArsenalTest,ArsenalAlt;
 
 function InitGame(string Options, out string Error)
 {
@@ -21,7 +21,7 @@ function InitGame(string Options, out string Error)
     SmokeTest = HasOption(Options, "SmokeTest");
     ArsenalAlt=HasOption(Options,"AltTest");
     ArsenalTest=HasOption(Options,"ArsenalTest");
-    OpenSetup=HasOption(Options,"OpenSetup");MenuNetworkTest=HasOption(Options,"MenuNetworkTest");NetworkReturnTest=HasOption(Options,"NetworkReturnTest");
+    OpenSetup=HasOption(Options,"OpenSetup");
     ClientTest = HasOption(Options, "ClientTest");
     AutoStart=HasOption(Options,"AutoStart");
     AutoStartCheck=HasOption(Options,"AutoStartCheck");
@@ -60,7 +60,6 @@ function PostBeginPlay()
     if (ClientTest) Spawn(class'UTATClientTest');
     if(OpenSetup) Spawn(class'UTATSetupOpener');
     if(ArsenalTest) Spawn(class'UTATArsenalTest');
-    if(MenuNetworkTest || NetworkReturnTest) { Spawn(class'UTATMenuNetworkTest').Returning=NetworkReturnTest; }
 }
 // This lab never enters DeathMatch ready/bot-fill/end-match logic.
 function Timer() { SentText=0; }

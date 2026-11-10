@@ -1,6 +1,6 @@
-# Standalone UWindow regression — 0.4.0
+# Standalone UWindow regression — 0.4.1
 
-Linux 469e. Native engine/viewport callbacks; physical mouse and visual acceptance remain separate. Dedicated tests use a synthetic pawn without a Player connection.
+Linux 469e native viewport and UWindow callbacks. Physical mouse and visual acceptance remain separate.
 
 ```text
 PASS About opens with ToastyCL credit and build information

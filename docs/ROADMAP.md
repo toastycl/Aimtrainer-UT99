@@ -1,26 +1,19 @@
-# Roadmap
+# Roadmap — standalone training
 
-## Development build 0.4.0
+## Active
 
-- [x] Simple own training map and compiled installation package.
-- [x] Local and actual IGPlus environment selection in UWindow.
-- [x] Arbitrary 0–300 ms added RTT, validated in menu/helper/relay.
-- [x] All eleven classic damage weapons; secondary fire available.
-- [x] Static/lateral-moving targets, random safe starts and respawns.
-- [x] Timed/free rounds, infinite ammo and server-confirmed scoring.
-- [x] Result overlay, fresh-fire acknowledgement and retained setup.
-- [x] About / Credits, launch scripts, README and Spanish test guide.
+- [x] Native UT setup with one Start control, eleven classic weapons and both fire modes.
+- [x] Static/strafe targets, random safe spawns, unlimited ammo and timed/free rounds.
+- [x] Result overlay and fresh-fire return to selection.
+- [x] Remove IGPlus/ping/helper requirements from the player flow.
 
-## Acceptance and follow-up
+## Suggested next work — not implemented
 
-- [ ] Physical Windows input/visual acceptance and wider resolution review.
-- [ ] Native macOS launcher support and Mac acceptance.
-- [ ] Match exact IGPlus server profiles and human-player hitboxes.
-- [ ] Validate anticheat separately; no production deployment is automatic.
-- [ ] Export network rounds/history and collect richer client metadata.
-- [ ] Seed replay for more controlled sensitivity comparisons.
-- [ ] Distance/size options, direction changes, jumping and dodge targets.
-- [ ] Optional jitter/loss/bandwidth simulation.
-- [ ] Choose a source license.
+1. Optional repeatable layout/movement seed for sensitivity A/B comparisons; retain random practice.
+2. Distance/size choices and variable movement: direction changes, jump/dodge patterns.
+3. Recent-round history and same-weapon/fire-style comparisons.
+4. Optional flick, tracking and combo exercises without restricting general practice weapons.
 
-[Public implementation/progress notes](WIP_SELECTABLE_PING.md) · [Validation](VALIDATION.md).
+## Deferred
+
+IGPlus/network latency only if a simple player installation can be achieved without external runtime requirements. See the archived idea under experimental/igplus. Physical input/visual acceptance and platform checks remain separate.

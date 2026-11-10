@@ -1,112 +1,78 @@
 # UT99 Aimtrainer
 
-A practice-room mod for **Unreal Tournament 99**, created by **ToastyCL** for the whole UT99 community. Choose a weapon, shoot static or moving characters, and compare your accuracy while trying your usual DPI, sensitivity and input settings.
+A simple **standalone practice-room mod for Unreal Tournament 99**, created by **ToastyCL** for the entire UT99 community. Install the mod/map, open UT, choose a weapon and train using your normal mouse settings.
 
-**Development build 0.4.0 · 2026-11-09 (UTC).** Local and IGPlus training, eleven classic weapons, editable 0–300 ms additional latency, timed rounds and results over the game view. [Validation](docs/VALIDATION.md) distinguishes executed checks from pending manual/platform acceptance.
+**Development build 0.4.1.** No Python, IGPlus, launcher or external helper is required to play. The earlier network/latency experiment is deferred; the current focus is the training experience inside UT.
 
-[**Download the complete development package**](downloads/UTAT-dev-0.4.0.zip?raw=true) · [Guía de instalación y prueba en español](docs/QUICKSTART_ES.md) · [Checksums](downloads/SHA256SUMS)
+[**Download the standalone mod + map**](downloads/UTAT-standalone-0.4.1.zip?raw=true) · [Guía en español](docs/QUICKSTART_ES.md) · [Validation](docs/VALIDATION.md) · [Checksums](downloads/SHA256SUMS)
 
-## Install
+## Install and play
 
-Close UT and extract the package into a **test copy of a complete UT99 469e installation**, preserving folders:
+Close UT and extract the compiled ZIP into a test copy of **UT99 469e**, preserving folders:
 
-| Package content | Destination |
+| File | Destination |
 | --- | --- |
-| `System/UTAT.u`, `System/UTAT.int`, `System/UTATNetLab.u` | UT's `System` folder |
+| `System/UTAT.u` | UT's `System` folder |
+| `System/UTAT.int` | UT's `System` folder |
 | `Maps/DM-UTAT-Room.unr` | UT's `Maps` folder |
-| `tools/`, `Start-Aimtrainer.cmd`, `Start-Aimtrainer.sh`, `LEEME.md` | UT installation root |
 
-Preserve User.ini and UnrealTournament.ini. No compilation, UnrealEd or Python libraries are needed to install the binaries. GitHub's **Code → Download ZIP** contains source; use the compiled package above to play.
+Keep your normal ini files. No compiler or UnrealEd is needed to install this ZIP. GitHub's Code → Download ZIP downloads source, not the compiled package linked above.
 
-**For IGPlus:** install Python 3.10+ and separately install `InstaGibPlus_11.u` and `InstaGibPlusAssets_v2.u` from [official IGPlus 11](https://github.com/utspect/InstaGibPlus/releases/tag/11) into `System`. Those third-party binaries and original UT assets are not bundled. Local practice also works without IGPlus, directly through the normal UT executable and Mods menu.
+1. Open UT normally, then **Mods → UT99 Aimtrainer**.
+2. Choose a weapon, static or laterally moving targets, and 30/60/120 seconds or free practice.
+3. Press the single **Start training** button. It enters the room with your selection.
+4. Shoot three human-shaped targets with unlimited ammo. Player starts and target respawns are random and separated. You can move, jump and dodge.
+5. Timed rounds end automatically. Free practice ends through **Finish round** / `AimFinish`.
+6. Read accuracy, emission counts, eliminations and elapsed time over the room. Release fire, then press a **fresh primary fire** to return to setup without firing or changing the score.
 
-## Start and play
+Opening setup pauses practice. Replay resets counters and removes old projectiles. The included map is a simple flat room with project-made grid textures. There are no enemy combat bots or flag objectives.
 
-On Windows, run **Start-Aimtrainer.cmd** from your test UT root. Keep its window open. It starts the private helper and opens UT's setup panel. On Linux, use `bash Start-Aimtrainer.sh`.
+Console fallback: `open DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=` followed by `AimMenu`.
 
-1. Choose **Local practice** or **IGPlus / all classic weapons**.
-2. For IGPlus, enter any whole **additional RTT from 0 to 300 ms**: 37, 85, 112, 143 and 300 are all valid. There is no preset-only list.
-3. Choose weapon, static/moving targets and 30/60/120 seconds or free practice.
-4. Press the single **Start training** button. Network mode waits for the helper's ready handshake before entering.
-5. Play with unlimited ammo against three human-shaped targets. Player starts and target respawns are randomized and separated. Targets have 100 HP; the trainee is protected from practice damage.
-6. Timed rounds finish automatically. Free practice finishes through **Finish round** in the Mods setup panel. Results appear **over the room**.
-7. Release fire, then press a **fresh primary fire** to return to selection without shooting or changing the score.
+## Weapons and scoring
 
-Reconfigure latency between rounds. Each IGPlus Start creates a fresh private server/relay session, clearing old delayed packets. Opening setup pauses active training, with network propagation delay in IGPlus; closing it resumes. Closing the helper-owned UT client shuts down its private server/relay.
+All eleven classic damage weapons are available, with primary and secondary fire: **Shock, Sniper, Minigun, Pulse, Rocket, Flak, Enforcer, Bio, Ripper, Impact Hammer and Redeemer**. Sniper secondary is zoom. The Translocator is a utility, outside the damage-weapon selector.
 
-For Local without the launcher: **Mods → UT99 Aimtrainer**, or `open DM-UTAT-Room?Game=UTAT.UTATGame?Mutator=` followed by `AimMenu`.
+**Accuracy = emitted units that damaged a target / emitted units × 100.** Units are traces/bullets, projectiles or Flak fragments. Splash counts once per successful unit even when damaging several targets. Explosion children retain the parent token; damaging Shock combos credit orb and detonating trace. Damage and eliminations are tracked separately.
 
-## Latency and actual IGPlus behavior
+**Pulse secondary uses beam contact time**, shown separately from projectile accuracy. Compare the same weapon and fire style across multiple rounds. Random placement varies difficulty. Targets are controlled Pawn collision cylinders using the Soldier mesh, not complete enemy AI.
 
-The helper binds only to localhost. It owns a dedicated UT server, a UDP delay relay and the client it launched. The in-game menu sends a validated request and travels only after a ready reply; startup errors remain visible in setup. UDP ports 17777 / 18777 / 18778 must be free.
+Use your usual DPI, sensitivity and input backend. Change hardware DPI in mouse software and client settings through UT. The mod does not detect/switch DPI or measure hardware latency. Profiles remain optional; `AimSensitivity`, `AimSave`, `AimProfile` and `AimRestore` support local trials.
 
-The configured value means **additional round-trip delay**. For example, 85 ms adds 42.5 ms outbound and 42.5 ms inbound. It does not force an exact scoreboard ping or reduce baseline latency. The HUD separately shows requested delay and the native **Game ping** reported by UT. RPC game-clock estimates remain diagnostics in test logs. Zero additional delay does not mean zero physical latency.
+## Next training improvements
 
-IGPlus mode retains its actual `bbTMale2` player and derives its instrumentation adapters from IGPlus 11's weapon/projectile classes, delegating behavior to their parent implementations. It uses the normal-weapon `WeaponSettingsOldNet` profile. It does not imply every CTF weapon uses NewNet compensation. A particular live server's exact build/settings, human-player hitbox behavior and anticheat compatibility need separate validation.
+Priorities under consideration, not implemented features:
 
-No jitter, packet loss or bandwidth emulation is included. No public relay, live-server deployment or automatic production configuration changes are performed. The helper uses separate practice engine/user ini files; it copies normal settings on first use and retains practice settings afterward.
+- Repeatable layouts/movement seeds for fairer sensitivity comparisons, while keeping random practice available.
+- Target distance/size choices and less predictable movement: direction changes, jumps and dodges.
+- Recent-round history and comparisons using the same weapon/fire style.
+- Optional focused exercises for flicks, tracking and Shock combos, alongside unrestricted free practice.
 
-## Arsenal and scoring
+[Roadmap](docs/ROADMAP.md). IGPlus/ping remains a [deferred idea](docs/WIP_SELECTABLE_PING.md); historical developer files are isolated under `experimental/igplus/` and excluded from the player package.
 
-All eleven weapons are selectable in both environments. Primary and secondary fire remain available; Sniper secondary is zoom. The Translocator is a utility, outside this damage-weapon selector.
+## About
 
-| Weapon | Scoring unit / behavior |
-| --- | --- |
-| Shock Rifle | Trace / orb; a damaging combo credits both components |
-| Sniper Rifle | Trace; secondary zoom emits no damage unit |
-| Minigun | Emitted bullet/trace |
-| Pulse Gun | Plasma projectile; secondary beam contact time shown separately |
-| Rocket Launcher | Rocket / grenade, including loaded projectiles |
-| Flak Cannon | Primary fragment / secondary shell |
-| Enforcer | Emitted trace, including rapid secondary fire |
-| Bio Rifle | Primary/charged glob; derived splash retains its parent's token |
-| Ripper | Blade / explosive secondary projectile |
-| Impact Hammer | Primary/secondary trace; no ammo required |
-| Redeemer | Warhead; expanding blast retains its original token |
+Open **About / Credits** in setup for **ToastyCL**, development version/date and project information. The tool is for all UT99 players and is not specific to a community/server.
 
-**Accuracy = emission units that damaged a target / emission units emitted × 100.** Splash counts once per successful unit even if several targets are damaged. Child fragments/splashes retain an existing parent token when generated by an explosion. Eliminations, useful damage and elapsed time are separate counters.
+## Developer build and checks
 
-**Pulse beam tracking is time-based:** contact time / active beam time, shown independently from projectile accuracy. It is not a projectile hit percentage. Compare the same weapon and fire mode across repeated rounds; random placement varies difficulty. Continuous-beam and mixed-fire statistics are not interchangeable with hitscan accuracy.
-
-The targets are controlled Pawn collision cylinders using the original Soldier mesh, not complete enemy AI or fully equivalent replicated human players. You can move, jump and dodge. The room uses project-made grid textures.
-
-## Mouse settings and project information
-
-Use your normal DPI, sensitivity and input backend. Change DPI in mouse software and sensitivity/input in the client. The mod does not detect/switch DPI, certify Raw Input/DirectInput or measure hardware latency. Keep renderer, FOV and FPS conditions consistent.
-
-Optional local `AimSensitivity`, `AimSave`, `AimProfile` and `AimRestore` commands remain available. Profiles are not required. Open **About / Credits** for **ToastyCL**, development version, UTC date, repository and scope.
-
-## Build and verify
-
-Requires Python 3.10+ and a complete UT99 469e installation/compiler. Install official IGPlus 11 dependencies before building its adapters.
+Players do not need these tools. Developers need Python 3.10+ and a complete UT99 469e installation/compiler:
 
 ```sh
 python scripts/build.py --ut-root "/path/to/UT"
-python scripts/build_netlab.py --ut-root "/path/to/UT"
-python scripts/package_dev.py --ut-root "/path/to/UT"
 python -m unittest discover -s tests -v
-python -m compileall -q scripts
-```
-
-Native checks require a full game/renderer and run sequentially:
-
-```sh
-python scripts/arsenal_smoke.py --ut-root "/path/to/UT" --offscreen --local
+python scripts/client_smoke.py --ut-root "/path/to/UT" --offscreen
 python scripts/arsenal_smoke.py --ut-root "/path/to/UT" --offscreen
 python scripts/arsenal_smoke.py --ut-root "/path/to/UT" --offscreen --alt
-python scripts/start_aimtrainer.py --ut-root "/path/to/UT" --offscreen --integration-check
-python scripts/client_smoke.py --ut-root "/path/to/UT" --offscreen
 python scripts/smoke.py --ut-root "/path/to/UT"
 ```
 
-`--offscreen` requires a compatible Linux SDL/Mesa renderer; omit it for a normal viewport. These tests invoke real game/UI/weapon code but do not replace physical mouse, visual or Windows/macOS acceptance. The launcher does not yet discover a macOS `.app` installation.
+Use --offscreen only with a compatible Linux SDL/Mesa renderer, or omit it for a normal client. Native callback/weapon tests are distinct from physical input and manual visual/platform acceptance. The local exporter `scripts/analyze.py` supports local results and separate beam contact metrics.
 
-Local records use schema v2 with `all-fire-units-v3` protocol; `scripts/analyze.py` exports supported local `RESULT` records. Network diagnostics currently use a separate `NETRESULT` record, not imported by that exporter. Retain logs before restarting. Do not publish raw personal logs/settings.
-
-[Validation](docs/VALIDATION.md) · [Manual testing](docs/TESTING.md) · [Architecture](docs/ARCHITECTURE.md) · [Project progress](docs/WIP_SELECTABLE_PING.md) · [Roadmap](docs/ROADMAP.md)
+[Architecture](docs/ARCHITECTURE.md) · [Manual testing](docs/TESTING.md) · [Validation](docs/VALIDATION.md)
 
 ## Contributions and rights
 
-Created by **ToastyCL** for all UT99 players. Work is public for anyone to inspect or contribute; no individual is assigned to finish it. Include client version, OS, weapon/fire mode, environment, requested ms and reproduction steps in bug reports.
+Created by **ToastyCL** for the whole UT99 community. Include client version, OS, weapon/fire mode, exercise and reproduction steps in feedback. Do not commit private ini files, personal logs or original game assets.
 
-A source license has not been selected; public visibility alone does not grant an open-source license. Original game assets/toolchain and IGPlus remain separate dependencies. No original or third-party binaries are redistributed in this project package. There is no automatic production deployment.
+A source license has not been selected. Public visibility alone does not grant an open-source license. Original game assets/toolchain remain external dependencies. No automatic production deployment is performed.

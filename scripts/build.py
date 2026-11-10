@@ -35,6 +35,9 @@ def main():
         defaults = root/'System'/'Default.ini'
     if not defaults.is_file():
         p.error('Default.ini not found in the installation')
+    # Remove retired files copied by earlier versions of this builder.
+    for name in ('UTATMenuNetworkTest', 'UTATNetworkBridge', 'UTATNetworkHUD', 'UTATNetworkState'):
+        (root/'UTAT'/'Classes'/(name+'.uc')).unlink(missing_ok=True)
     shutil.copytree(REPO/'UTAT', root/'UTAT', dirs_exist_ok=True)
     (system/'UTATBuild.ini').write_text(build_ini(defaults.read_text(encoding='utf-8-sig')), encoding='utf-8')
     work = REPO/'build'; work.mkdir(exist_ok=True)
@@ -69,7 +72,7 @@ def main():
         print(map_output)
         if mapped.returncode or not room.is_file() or '0 error' not in map_output.lower() or 'Polys: 6 -> 6' not in map_output:
             raise RuntimeError('Training map did not build successfully. See build/map-build.log')
-        target = dist/'UTAT-alpha-0.4.0.zip'
+        target = dist/'UTAT-standalone-0.4.1.zip'
         with zipfile.ZipFile(target, 'w', zipfile.ZIP_DEFLATED) as z:
             z.write(binary, 'System/UTAT.u')
             z.write(room, 'Maps/DM-UTAT-Room.unr')
