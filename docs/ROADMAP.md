@@ -1,19 +1,20 @@
 # Roadmap — standalone training
 
-## Active
+## Implemented in 0.5.0
 
-- [x] Native UT setup with one Start control, eleven classic weapons and both fire modes.
-- [x] Static/strafe targets, random safe spawns, unlimited ammo and timed/free rounds.
-- [x] Result overlay and fresh-fire return to selection.
-- [x] Remove IGPlus/ping/helper requirements from the player flow.
+- Native UT setup, one Start button, eleven damage weapons and both fire modes.
+- Static/strafe/evasive/random aerial targets, collision-scaled normal/small/large sizes.
+- Mixed/close/medium/far distance bands; random safe spawns and unlimited ammo.
+- Timed/free rounds, result overlay and fresh-fire return.
+- Last ten rounds in native paginated UI, persisted in the mod's own configuration.
+- Standalone installation without Python/helper requirements for players.
 
-## Suggested next work — not implemented
+## Future ideas — not implemented
 
-1. Optional repeatable layout/movement seed for sensitivity A/B comparisons; retain random practice.
-2. Distance/size choices and variable movement: direction changes, jump/dodge patterns.
-3. Recent-round history and same-weapon/fire-style comparisons.
-4. Optional flick, tracking and combo exercises without restricting general practice weapons.
+- Optional repeatable layouts/movement seeds for sensitivity comparisons; retain random practice.
+- Additional focused flick/tracking/combo exercises alongside unrestricted practice.
+- Dedicated comparison view with matched settings and more complete input metadata.
 
 ## Deferred
 
-IGPlus/network latency only if a simple player installation can be achieved without external runtime requirements. See the archived idea under experimental/igplus. Physical input/visual acceptance and platform checks remain separate.
+IGPlus/network latency only if a simple player installation can be achieved without external runtime requirements. Historical files remain in experimental/igplus. Physical input/visual/platform acceptance remains separate from engine tests.

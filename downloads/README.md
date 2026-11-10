@@ -1,7 +1,7 @@
-# Standalone development build 0.4.1
+# Standalone development build 0.5.0
 
-[**Download mod + map**](UTAT-standalone-0.4.1.zip?raw=true) · [Guía de instalación](../docs/QUICKSTART_ES.md) · [Validation](../docs/VALIDATION.md) · [Checksums](SHA256SUMS)
+[**Download mod + map**](UTAT-standalone-0.5.0.zip?raw=true) · [Guía de instalación](../docs/QUICKSTART_ES.md) · [Validation](../docs/VALIDATION.md) · [Checksums](SHA256SUMS)
 
-Copy the compiled mod/int/map into UT99 469e and open UT normally. No Python, IGPlus, launcher or helper is needed to play. Includes all eleven classic damage weapons, primary/secondary fire, infinite ammo, static/moving targets, random safe spawns and timed/free practice with results over the room.
+Copy the compiled mod/int/map into UT99 469e and open UT normally. Players need no Python, IGPlus, launcher or helper. Adds random aerial/evasive targets, distance and collision-scaled size options, and persistent native last-ten-round history. All eleven classic weapons, infinite ammo, random safe spawns and timed/free practice remain.
 
-Older packages are historical experiments. Their helpers and network components are not part of the current installation. No GitHub Release or production deployment is involved.
+Earlier packages remain historical. No GitHub Release or production deployment is involved.

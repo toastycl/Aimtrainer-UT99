@@ -2,9 +2,9 @@
 
 A simple **standalone practice-room mod for Unreal Tournament 99**, created by **ToastyCL** for the entire UT99 community. Install the mod/map, open UT, choose a weapon and train using your normal mouse settings.
 
-**Development build 0.4.1.** No Python, IGPlus, launcher or external helper is required to play. The earlier network/latency experiment is deferred; the current focus is the training experience inside UT.
+**Development build 0.5.0.** No Python, IGPlus, launcher or external helper is required to play. The earlier network/latency experiment is deferred; the current focus is the training experience inside UT.
 
-[**Download the standalone mod + map**](downloads/UTAT-standalone-0.4.1.zip?raw=true) · [Guía en español](docs/QUICKSTART_ES.md) · [Validation](docs/VALIDATION.md) · [Checksums](downloads/SHA256SUMS)
+[**Download the standalone mod + map**](downloads/UTAT-standalone-0.5.0.zip?raw=true) · [Guía en español](docs/QUICKSTART_ES.md) · [Validation](docs/VALIDATION.md) · [Checksums](downloads/SHA256SUMS)
 
 ## Install and play
 
@@ -19,9 +19,9 @@ Close UT and extract the compiled ZIP into a test copy of **UT99 469e**, preserv
 Keep your normal ini files. No compiler or UnrealEd is needed to install this ZIP. GitHub's Code → Download ZIP downloads source, not the compiled package linked above.
 
 1. Open UT normally, then **Mods → UT99 Aimtrainer**.
-2. Choose a weapon, static or laterally moving targets, and 30/60/120 seconds or free practice.
+2. Choose a weapon, target exercise, distance, size and 30/60/120 seconds or free practice.
 3. Press the single **Start training** button. It enters the room with your selection.
-4. Shoot three human-shaped targets with unlimited ammo. Player starts and target respawns are random and separated. You can move, jump and dodge.
+4. Shoot three human-shaped targets with unlimited ammo, including random aerial targets. Player starts and target respawns are random and separated. You can move, jump and dodge.
 5. Timed rounds end automatically. Free practice ends through **Finish round** / `AimFinish`.
 6. Read accuracy, emission counts, eliminations and elapsed time over the room. Release fire, then press a **fresh primary fire** to return to setup without firing or changing the score.
 
@@ -39,16 +39,21 @@ All eleven classic damage weapons are available, with primary and secondary fire
 
 Use your usual DPI, sensitivity and input backend. Change hardware DPI in mouse software and client settings through UT. The mod does not detect/switch DPI or measure hardware latency. Profiles remain optional; `AimSensitivity`, `AimSave`, `AimProfile` and `AimRestore` support local trials.
 
-## Next training improvements
+## Target exercises and round history
 
-Priorities under consideration, not implemented features:
+| Setting | Choices |
+| --- | --- |
+| Targets | Static, lateral strafe, evasive with direction/speed changes and simulated jumps, random aerial movement |
+| Distance | Mixed, close (700–1050), medium (1150–1550), far (1750–2300 horizontal UT units) |
+| Target size | Normal, small (60%), large (140%); mesh and collision cylinder scale together |
 
-- Repeatable layouts/movement seeds for fairer sensitivity comparisons, while keeping random practice available.
-- Target distance/size choices and less predictable movement: direction changes, jumps and dodges.
-- Recent-round history and comparisons using the same weapon/fire style.
-- Optional focused exercises for flicks, tracking and Shock combos, alongside unrestricted free practice.
+Aerial targets spawn with their center at random heights of 200–600 UT units and move toward changing 3D destinations. Evasive targets use varied ground directions/speed and short jump arcs and brief dodge-like speed bursts. These are training trajectories, not human player AI, real dodge physics or IGPlus/network simulation. Unsafe movement steps are rejected without ending the round. Distance bands are measured from the round's starting position; walking closer still works, including for Hammer practice. Spawns remain random.
 
-[Roadmap](docs/ROADMAP.md). IGPlus/ping remains a [deferred idea](docs/WIP_SELECTABLE_PING.md); historical developer files are isolated under `experimental/igplus/` and excluded from the player package.
+**Round history** opens from setup and retains the last ten rounds across game restarts in the mod's own `UTAT.ini`. It shows weapon, sensitivity, target settings, fire-input style, hits/units, accuracy, beam contact, eliminations, FOV/smoothing and completion/time. Newest rounds appear first, three per page. Finishing or cancelling an active round saves one entry; early finishes are marked partial. Pulse contact stays separate from projectile accuracy.
+
+History is a review of your trials, not an automatic sensitivity recommendation. Compare the same weapon, fire style, target settings and duration over several completed rounds. Placement remains random, DPI/input backend is not detected, and player movement can change the actual engagement distance.
+
+[Roadmap](docs/ROADMAP.md). Optional repeatable scenarios remain a future idea. IGPlus/ping is [deferred](docs/WIP_SELECTABLE_PING.md); its historical files remain isolated under `experimental/igplus/` and excluded from the player package.
 
 ## About
 
@@ -61,6 +66,7 @@ Players do not need these tools. Developers need Python 3.10+ and a complete UT9
 ```sh
 python scripts/build.py --ut-root "/path/to/UT"
 python -m unittest discover -s tests -v
+python scripts/training_smoke.py --ut-root "/path/to/UT"
 python scripts/client_smoke.py --ut-root "/path/to/UT" --offscreen
 python scripts/arsenal_smoke.py --ut-root "/path/to/UT" --offscreen
 python scripts/arsenal_smoke.py --ut-root "/path/to/UT" --offscreen --alt

@@ -1,9 +1,11 @@
-# Manual acceptance — standalone 0.4.1
+# Manual acceptance — standalone 0.5.0
 
-1. Install only UTAT.u, UTAT.int and DM-UTAT-Room.unr in a test UT99 469e installation.
-2. Start UT normally; open Mods → UT99 Aimtrainer. No Python, launcher, IGPlus or network/ping controls should be required or shown.
-3. Verify all eleven weapons and both fire modes, infinite ammo, static/moving targets and random separated respawns.
-4. Check 30/60/120 seconds and free practice, menu pause/resume, manual Finish/Cancel, replay and zero-shot rounds.
-5. Hold fire at the deadline: results must stay visible. Release and press fresh primary fire: return to selection without an extra shot.
-6. Check emissions, splash deduplication, Shock combo components, charged Bio, Flak children and Redeemer blast. Sniper secondary is zoom; Pulse beam uses contact time separately.
-7. Review setup/About/results at common resolutions and test your normal input/sensitivity settings. Native automated callbacks do not replace physical or visual acceptance.
+1. Close a test UT99 469e installation and replace the mod/int/map, preserving ini files. Open UT normally, Mods → UT99 Aimtrainer.
+2. Choose Sniper, Random aerial, Medium, Normal, 30 seconds. Start with the only Start button. Confirm elevated dummies spawn/move and can be shot. Confirm timer ends and results stay over the room. Release fire then use fresh primary fire to return to setup.
+3. Repeat with Small and Large: visual model and impact area should both change. Try Close/Medium/Far; measure from the initial anchor if checking UT units, not from a player who has moved.
+4. Try Evasive / jumps for direction/speed changes and jump arcs. Repeat static/strafe to confirm original exercises remain available. Move around and check targets stay in the room and rounds do not stop at a wall.
+5. Test all eleven weapons and both fire modes, infinite ammo, ground/aerial respawn, replay resets and safe random trainee placement. Hammer remains available; you may need to approach a reachable target. Pulse secondary shows beam contact separately; Sniper secondary zooms.
+6. After finishing open Round history. Check latest settings/metrics and partial status for early finish/cancel. Navigate older/newer pages, return to setup and confirm selections are preserved. Generate more than ten rounds and confirm bounded history. Restart UT and check entries persist.
+7. Test native GUI fit and readable labels at your normal resolution, OS/client and actual mouse input. Developer offscreen callbacks do not replace this acceptance.
+
+For a report include client version, OS, resolution, weapon/fire style, exercise, distance/size, duration and reproduction steps. Preserve the relevant log before restarting and review it before sharing. No Python, external helper, IGPlus or ping controls should be required for players.

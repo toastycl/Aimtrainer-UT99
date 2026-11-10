@@ -3,7 +3,9 @@ class UTATTarget extends Pawn;
 var UTATGame Trainer;
 var vector HomePosition;
 var int Index;
-var float ReadyAt;
+var float ReadyAt,MoveRemaining,MoveSpeed,JumpAge,BurstRemaining;
+var vector TrainingGoal;
+var bool Jumping;
 function PostBeginPlay()
 {
     local int I;

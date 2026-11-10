@@ -15,8 +15,8 @@ function Paint(Canvas C,float X,float Y)
     ClipText(C,16,44,class'UTATAboutInfo'.static.AuthorText());
     ClipText(C,16,68,class'UTATAboutInfo'.static.BuildText());
     ClipText(C,16,104,"A practice tool for the entire UT99 community.");
-    ClipText(C,16,128,"11 classic weapons / static or moving targets.");
-    ClipText(C,16,152,"Random spawns / unlimited ammo / round accuracy.");
+    ClipText(C,16,128,"11 weapons / ground and random aerial targets.");
+    ClipText(C,16,152,"Distance / size / movement / last 10 rounds.");
     ClipText(C,16,188,"Use your usual mouse DPI, sensitivity and input.");
     ClipText(C,16,212,"DPI and hardware latency are not measured.");
     ClipText(C,16,248,"Install mod + map and play. No helper required.");

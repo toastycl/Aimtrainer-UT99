@@ -11,7 +11,7 @@ from statistics import mean, pstdev
 
 REQUIRED = ('version','complete','protocol','exercise','sequence','duration','elapsed','shots','hits','mean_ms','map','anchor','yaw','input','sens','nosmooth','maxsmooth','threshold','fov','profile')
 # Input remains unverified in alpha: do not infer backend from a profile name.
-COHORT = ('protocol','weapon','unit','exercise','sequence','duration','map','anchor','yaw','fov')
+COHORT = ('protocol','weapon','unit','exercise','sequence','duration','map','anchor','yaw','fov','distance','size','fire_style')
 CONFIG = ('profile','sens','nosmooth','maxsmooth','threshold','input')
 
 def parse_result(line):
@@ -30,6 +30,9 @@ def parse_result(line):
     row.setdefault('unit','trace')
     row.setdefault('kills','0')
     row.setdefault('damage','0')
+    row.setdefault('distance','0');row.setdefault('size','0');row.setdefault('fire_style','unknown')
+    if row['distance'] not in ('0','1','2','3') or row['size'] not in ('0','1','2') or row['fire_style'] not in ('unknown','0','1','2','3'):
+        raise ValueError('Invalid training geometry or fire style')
     row.setdefault('seed','')
     row.setdefault('beam_active','0');row.setdefault('beam_contact','0')
     values = {key:float(row[key]) for key in ('elapsed','shots','hits','mean_ms','duration','sens','threshold','fov','kills','damage','beam_active','beam_contact')}
@@ -81,7 +84,7 @@ def main():
     if not rows: p.error('No UTAT result records found')
     a.out.mkdir(parents=True,exist_ok=True)
     with (a.out/'sessions.csv').open('w',newline='',encoding='utf-8') as f:
-        writer=csv.DictWriter(f,fieldnames=list(REQUIRED)+['weapon','unit','kills','damage','seed','beam_active','beam_contact','beam_contact_pct','accuracy_pct','hits_per_minute','time_to_hit_ms'])
+        writer=csv.DictWriter(f,fieldnames=list(REQUIRED)+['weapon','unit','kills','damage','distance','size','fire_style','seed','beam_active','beam_contact','beam_contact_pct','accuracy_pct','hits_per_minute','time_to_hit_ms'])
         writer.writeheader();writer.writerows({k:r[k] for k in writer.fieldnames} for r in rows)
     (a.out/'summary.json').write_text(json.dumps({'warning':'Input backend unverified; times are game-clock measurements, not hardware latency. Compare repeated sessions, not single rounds.','groups':summarize(rows)},indent=2),encoding='utf-8')
     print(f'Exported {len(rows)} sessions. Completed rounds only in summary.')

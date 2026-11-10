@@ -6,6 +6,8 @@ var UTATRoomInfo Room;
 var UTATRoundController RoundController;
 var float RoundElapsed, ResultsAt,BeamActive,BeamContact;
 var int RandomSeed, RoundSeed, PendingWeapon, PendingExercise, PendingSeconds;
+var int PendingDistance,PendingSize,DistanceMode,SizeMode,FireMask;
+var bool TrainingTest;
 var bool AutoStart, ResultsDismissed, AutoStartCheck;
 var bool Running, HasResult, LastComplete;
 var int Shots, Hits, Eliminations, DamageDealt, RoundId, ExerciseMode, SessionDuration, WeaponIndex;
@@ -25,8 +27,11 @@ function InitGame(string Options, out string Error)
     ClientTest = HasOption(Options, "ClientTest");
     AutoStart=HasOption(Options,"AutoStart");
     AutoStartCheck=HasOption(Options,"AutoStartCheck");
+    TrainingTest=HasOption(Options,"TrainingTest");
+    PendingDistance=Clamp(GetIntOption(Options,"LabDistance",0),0,3);
+    PendingSize=Clamp(GetIntOption(Options,"LabSize",0),0,2);
     PendingWeapon=Clamp(GetIntOption(Options,"LabWeapon",0),0,10);
-    PendingExercise=Clamp(GetIntOption(Options,"LabExercise",0),0,1);
+    PendingExercise=Clamp(GetIntOption(Options,"LabExercise",0),0,3);
     PendingSeconds=Clamp(GetIntOption(Options,"LabSeconds",60),0,300);
     RandomSeed=Rand(65535)+1;
     // Global DeathMatch bot/tournament preferences must never populate the room.
@@ -56,6 +61,7 @@ function PostBeginPlay()
     Spawn(class'UTATProjectileNotify');
     RoundController=Spawn(class'UTATRoundController');
     if(RoundController!=None) RoundController.Trainer=Self;
+    if(TrainingTest) Spawn(class'UTATTrainingTest');
     if (SmokeTest) Spawn(class'UTATSmokeTest');
     if (ClientTest) Spawn(class'UTATClientTest');
     if(OpenSetup) Spawn(class'UTATSetupOpener');
@@ -145,6 +151,8 @@ function AddDefaultInventory(Pawn P)
         UTATPlayer(P).Settings.WeaponIndex=PendingWeapon;
         UTATPlayer(P).Settings.Exercise=PendingExercise;
         UTATPlayer(P).Settings.Duration=PendingSeconds;
+        UTATPlayer(P).Settings.TargetDistance=PendingDistance;
+        UTATPlayer(P).Settings.TargetSize=PendingSize;
     }
     GiveTrainingWeapon(UTATPlayer(P), UTATPlayer(P).Settings.WeaponIndex);
 }
@@ -175,27 +183,92 @@ function bool PlaceTrainee(UTATPlayer P)
     }
     return False;
 }
-function bool PlaceTarget(UTATTarget T, bool Respawning)
+// Distances are horizontal UT units from the round's starting anchor.
+// Movement and spawn bounds account for the scaled collision cylinder.
+function bool ValidTargetPosition(UTATTarget T,vector Pos)
 {
-    local int Attempt,I;
-    local bool Clear;
+    local vector Offset;
+    local int I;
+    if(Pos.X < -1480+T.CollisionRadius || Pos.X > 1480-T.CollisionRadius
+        || Pos.Y < -960+T.CollisionRadius || Pos.Y > 960-T.CollisionRadius
+        || Pos.Z<T.CollisionHeight+1 || Pos.Z>740-T.CollisionHeight) return False;
+    Offset=Pos-Anchor;Offset.Z=0;
+    if(VSize(Offset)<class'UTATTrainingOptions'.static.MinDistance(DistanceMode)
+        || VSize(Offset)>class'UTATTrainingOptions'.static.MaxDistance(DistanceMode)) return False;
+    if(VSize(Pos-Trainee.Location)<160 || !FastTrace(Pos,Trainee.Location)) return False;
+    for(I=0;I<3;I++)
+        if(Targets[I]!=None && Targets[I]!=T && !Targets[I].bHidden
+            && VSize(Pos-Targets[I].Location)<T.CollisionRadius+Targets[I].CollisionRadius+90) return False;
+    return True;
+}
+function bool PlaceTarget(UTATTarget T,bool Respawning)
+{
+    local int Attempt;
     local vector Pos;
+    local float Scale;
     if(Room==None) return False;
-    for(Attempt=0; Attempt<64; Attempt++)
+    Scale=class'UTATTrainingOptions'.static.Scale(SizeMode);
+    T.DrawScale=Scale;T.SetCollisionSize(17*Scale,39*Scale);
+    for(Attempt=0;Attempt<256;Attempt++)
     {
         Pos=class'UTATSpawnPlanner'.static.InBox(RandomSeed,Room.TargetSpawnMin,Room.TargetSpawnMax);
-        if(VSize(Pos-Trainee.Location)<700 || !FastTrace(Pos,Trainee.Location)) continue;
+        // Include the close end of the room for short-distance practice.
+        Pos.X=-500+1950*class'UTATSpawnPlanner'.static.Unit(RandomSeed);
+        Pos.Z=T.CollisionHeight+1;
+        if(ExerciseMode==3) Pos.Z=200+400*class'UTATSpawnPlanner'.static.Unit(RandomSeed);
+        if(!ValidTargetPosition(T,Pos)) continue;
         if(Respawning && VSize(Pos-T.HomePosition)<180) continue;
-        Clear=True;
-        for(I=0; I<3; I++)
-            if(Targets[I]!=None && Targets[I]!=T && VSize(Pos-Targets[I].HomePosition)<200) Clear=False;
-        if(!Clear || !T.SetLocation(Pos)) continue;
-        T.HomePosition=Pos; T.Health=100; T.bHidden=False;
-        T.SetCollision(True,False,False);
-        T.SetRotation(rotator(Trainee.Location-Pos));
-        return True;
+        if(!T.SetLocation(Pos)) continue;
+        T.HomePosition=Pos;T.TrainingGoal=Pos;T.MoveRemaining=0;T.Jumping=False;T.BurstRemaining=0;
+        T.Health=100;T.bHidden=False;T.SetCollision(True,False,False);
+        T.SetRotation(rotator(Trainee.Location-Pos));return True;
     }
     return False;
+}
+function MoveTarget(UTATTarget T,float Delta,float Age)
+{
+    local vector Pos,Offset;
+    local float Step,Length;
+    Pos=T.Location;
+    if(ExerciseMode==0) return;
+    if(ExerciseMode==1) Pos=T.HomePosition+64*Sin(Age*2+T.Index)*SideAxis;
+    else
+    {
+        T.MoveRemaining-=Delta;
+        if(T.MoveRemaining<=0)
+        {
+            T.TrainingGoal=T.HomePosition;
+            T.TrainingGoal.X+=480*(class'UTATSpawnPlanner'.static.Unit(RandomSeed)-0.5);
+            T.TrainingGoal.Y+=640*(class'UTATSpawnPlanner'.static.Unit(RandomSeed)-0.5);
+            if(ExerciseMode==3) T.TrainingGoal.Z=200+400*class'UTATSpawnPlanner'.static.Unit(RandomSeed);
+            T.MoveRemaining=0.5+class'UTATSpawnPlanner'.static.Unit(RandomSeed);
+            T.MoveSpeed=160+140*class'UTATSpawnPlanner'.static.Unit(RandomSeed);
+            if(ExerciseMode==2 && !T.Jumping && class'UTATSpawnPlanner'.static.Unit(RandomSeed)<0.55)
+            {T.Jumping=True;T.JumpAge=0;}
+            if(ExerciseMode==2 && !T.Jumping && class'UTATSpawnPlanner'.static.Unit(RandomSeed)<0.4)
+                T.BurstRemaining=0.2;
+        }
+        Offset=T.TrainingGoal-Pos;
+        if(ExerciseMode==2) Offset.Z=0;
+        Length=VSize(Offset);Step=T.MoveSpeed;
+        if(T.BurstRemaining>0) Step=560;
+        T.BurstRemaining=FMax(0,T.BurstRemaining-Delta);
+        Step=FMin(Length,Step*Delta);
+        if(Length>0.01) Pos+=Offset*(Step/Length);
+        if(ExerciseMode==2)
+        {
+            Pos.Z=T.CollisionHeight+1;
+            if(T.Jumping)
+            {
+                T.JumpAge+=Delta;
+                if(T.JumpAge>=0.8) T.Jumping=False;
+                else Pos.Z+=140*Sin(T.JumpAge*Pi/0.8);
+            }
+        }
+    }
+    if(ValidTargetPosition(T,Pos) && T.SetLocation(Pos)) return;
+    // Reject an unsafe step, choose another direction; never abort a round at a wall.
+    T.MoveRemaining=0;
 }
 function StartSession(UTATPlayer P)
 {
@@ -230,6 +303,7 @@ function StartSession(UTATPlayer P)
     ActiveShot=None;
     ExerciseMode=P.Settings.Exercise;
     SessionDuration=P.Settings.Duration;
+    DistanceMode=P.Settings.TargetDistance;SizeMode=P.Settings.TargetSize;FireMask=0;
     StartedAt=Level.TimeSeconds;
     RoundElapsed=0;BeamActive=0;BeamContact=0;
     HasResult=False; ResultsDismissed=False;
@@ -273,7 +347,6 @@ function UpdateRound(float Delta)
 {
     local int I;
     local float Age;
-    local vector Pos;
     if (!Running) return;
     if (Trainee==None || Trainee.Health<=0)
     {
@@ -282,6 +355,8 @@ function UpdateRound(float Delta)
     Trainee.Health=100;
     RoundElapsed+=Delta/FMax(0.01,Level.TimeDilation);
     Age=RoundElapsed;
+    if(Trainee.bFire!=0) FireMask=FireMask | 1;
+    if(Trainee.bAltFire!=0) FireMask=FireMask | 2;
     if (SessionDuration>0 && Age>=SessionDuration)
     {
         FinishSession(True); return;
@@ -293,9 +368,7 @@ function UpdateRound(float Delta)
         {
             if(!PlaceTarget(Targets[I],True)) { FinishSession(False); return; }
         }
-        Pos=Targets[I].HomePosition;
-        if (ExerciseMode==1) Pos+=64*Sin(Age*2.0+I)*SideAxis;
-        if (!Targets[I].SetLocation(Pos)) { FinishSession(False); return; }
+        if(!Targets[I].bHidden) MoveTarget(Targets[I],Delta/FMax(0.01,Level.TimeDilation),Age);
     }
 }
 function float AccuracyPercent()
@@ -325,13 +398,15 @@ function FinishSession(bool Complete)
         if (P.Instigator==Trainee) P.Destroy();
     Record="RESULT|version=2|complete="$Complete$"|exercise="$ExerciseMode
         $"|protocol=all-fire-units-v3|weapon="$WeaponLabel(WeaponIndex)$"|unit="$UnitLabel(WeaponIndex)
-        $"|sequence=random-v1|seed="$RoundSeed$"|duration="$SessionDuration$"|elapsed="$LastElapsed$"|shots="$Shots$"|hits="$Hits
+        $"|distance="$DistanceMode$"|size="$SizeMode$"|fire_style="$FireMask
+        $"|sequence=random-v2|seed="$RoundSeed$"|duration="$SessionDuration$"|elapsed="$LastElapsed$"|shots="$Shots$"|hits="$Hits
         $"|beam_active="$BeamActive$"|beam_contact="$BeamContact$"|kills="$Eliminations$"|damage="$DamageDealt$"|mean_ms=0|map="$string(Level.Outer.Name)
         $"|anchor="$string(Anchor)$"|yaw="$AnchorRotation.Yaw$"|input=unverified|"$Snapshot;
     Log(Record,'UTAT');
     LastSummary="Accuracy "$int(AccuracyPercent())$"% | Hits "$Hits$" / "$Shots$" | Eliminations "$Eliminations;
     if (Trainee!=None)
     {
+        Trainee.Settings.AddRound(Self,Trainee);
         Trainee.Settings.LastResult=Record;
         Trainee.Settings.SaveConfig();
         Trainee.ClientMessage(LastSummary);

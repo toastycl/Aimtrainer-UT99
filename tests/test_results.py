@@ -61,3 +61,13 @@ class NativeAndBeam(unittest.TestCase):
         summary=summarize([row])[0]
         self.assertIsNone(summary['accuracy_mean']);self.assertEqual(summary['beam_contact_mean'],80)
         with self.assertRaises(ValueError):parse_result(record.replace('beam_contact=8','beam_contact=11'))
+
+class TrainingConditions(unittest.TestCase):
+    def test_history_exports_keep_geometry_and_fire_style_separate(self):
+        variants=[BASE,BASE+'|distance=1',BASE+'|size=1',BASE+'|fire_style=2']
+        self.assertEqual(len(summarize([parse_result(v) for v in variants])),4)
+    def test_legacy_geometry_defaults_and_invalid_values(self):
+        row=parse_result(BASE)
+        self.assertEqual((row['distance'],row['size'],row['fire_style']),('0','0','unknown'))
+        for extra in ('|distance=9','|size=-1','|fire_style=primary'):
+            with self.subTest(extra=extra),self.assertRaises(ValueError):parse_result(BASE+extra)

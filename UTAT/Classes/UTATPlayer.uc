@@ -11,7 +11,10 @@ function EnsureSettings()
         return;
     Settings = new(None) class'UTATStore';
     Settings.ActiveProfile = Clamp(Settings.ActiveProfile, 0, 2);
-    Settings.Exercise = Clamp(Settings.Exercise, 0, 1);
+    Settings.Exercise = Clamp(Settings.Exercise, 0, 3);
+    Settings.TargetDistance=Clamp(Settings.TargetDistance,0,3);
+    Settings.TargetSize=Clamp(Settings.TargetSize,0,2);
+    Settings.HistoryCount=Clamp(Settings.HistoryCount,0,10);
     Settings.Duration = Clamp(Settings.Duration, 0, 300);
     Settings.WeaponIndex = Clamp(Settings.WeaponIndex, 0, 10);
     OriginalSensitivity = MouseSensitivity;
@@ -99,13 +102,23 @@ exec function AimSmoothing()
 exec function AimExercise(int Mode)
 {
     EnsureSettings();
-    if (CanConfigure() && Mode >= 0 && Mode <= 1)
+    if (CanConfigure() && Mode >= 0 && Mode <= 3)
     {
         Settings.Exercise = Mode;
         Settings.SaveConfig();
     }
 }
 
+exec function AimDistance(int Mode)
+{
+    EnsureSettings();
+    if(CanConfigure() && Mode>=0 && Mode<=3) {Settings.TargetDistance=Mode;Settings.SaveConfig();}
+}
+exec function AimSize(int Mode)
+{
+    EnsureSettings();
+    if(CanConfigure() && Mode>=0 && Mode<=2) {Settings.TargetSize=Mode;Settings.SaveConfig();}
+}
 exec function AimDuration(int Seconds)
 {
     EnsureSettings();
@@ -131,6 +144,7 @@ exec function Fire(optional float F)
         }
         return;
     }
+    if(G!=None && G.Running) G.FireMask=G.FireMask | 1;
     Super.Fire(F);
 }
 exec function AltFire(optional float F)
@@ -139,6 +153,8 @@ exec function AltFire(optional float F)
     {
         bAltFire=0; return;
     }
+    if(UTATGame(Level.Game)!=None && UTATGame(Level.Game).Running)
+        UTATGame(Level.Game).FireMask=UTATGame(Level.Game).FireMask | 2;
     Super.AltFire(F);
 }
 exec function AimMenu()
@@ -228,7 +244,8 @@ exec function AimHelp()
 {
     ClientMessage("Mods > UT99 Aimtrainer opens the training panel.");
     ClientMessage("AimSave 0..2 | AimProfile 0..2 | AimSensitivity 1.8 | AimSmoothing");
-    ClientMessage("AimWeapon 0..10 | AimExercise 0=static,1=strafe | AimDuration 0=free or 60");
+    ClientMessage("AimWeapon 0..10 | AimExercise 0=static,1=strafe,2=evasive,3=aerial | AimDuration 0=free or 60");
+    ClientMessage("AimDistance 0=mixed,1=close,2=medium,3=far | AimSize 0=normal,1=small,2=large");
     ClientMessage("AimStart | AimFinish | AimRestart | AimStop | AimMenu");
 }
 

@@ -7,6 +7,8 @@ var UTATWindow W;
 var UTATPanel Panel;
 var UTATAboutWindow AboutWindow;
 var UTATAboutPanel AboutPanel;
+var UTATHistoryWindow HistoryWindow;
+var UTATHistoryPanel HistoryPanel;
 var int Stage, Failures, FinishedShots;
 var float Age;
 var vector PreviousAnchor, PreviousTarget;
@@ -35,6 +37,18 @@ function Tick(float Delta)
         P.ShowTrainingPanel(); FindPanel();
         if(Panel==None) { Check(False,"controls exist"); ConsoleCommand("exit"); return; }
         Panel.WeaponControl.SetSelectedIndex(1); Panel.DurationControl.SetSelectedIndex(1);
+        Panel.ExerciseControl.SetSelectedIndex(3);Panel.DistanceControl.SetSelectedIndex(3);Panel.SizeControl.SetSelectedIndex(2);
+        Panel.Notify(Panel.HistoryButton,Panel.DE_Click);
+        HistoryWindow=UTATHistoryWindow(WC.Root.FindChildWindow(class'UTATHistoryWindow',True));
+        Check(HistoryWindow!=None,"round history opens inside native UT setup");
+        if(HistoryWindow!=None)
+        {
+            HistoryPanel=UTATHistoryPanel(HistoryWindow.ClientArea);
+            HistoryPanel.Notify(HistoryPanel.NextButton,HistoryPanel.DE_Click);
+            Check(HistoryPanel.Page==0 || HistoryPanel.Store.HistoryCount>3,"history pagination respects available entries");
+            HistoryPanel.Notify(HistoryPanel.BackButton,HistoryPanel.DE_Click);
+        }
+        Check(Panel.ExerciseControl.GetSelectedIndex()==3 && Panel.DistanceControl.GetSelectedIndex()==3 && Panel.SizeControl.GetSelectedIndex()==2,"history preserves aerial/distance/size selection");
         Panel.Notify(Panel.AboutButton,Panel.DE_Click);
         AboutWindow=UTATAboutWindow(WC.Root.FindChildWindow(class'UTATAboutWindow',True));
         Check(AboutWindow!=None && class'UTATAboutInfo'.static.AuthorText()=="Created by ToastyCL","About opens with ToastyCL credit and build information");
@@ -53,13 +67,14 @@ function Tick(float Delta)
         if(G.AutoStartCheck)
         {
             Check(G.Running && G.WeaponIndex==1 && P.Weapon.IsA('SniperRifle'),"one Start button keeps selected Sniper across room travel");
+            Check(G.ExerciseMode==3 && G.DistanceMode==3 && G.SizeMode==2,"aerial, distance and size selections survive room travel");
             Check(G.SessionDuration==30,"selected duration survives room travel");
             G.FinishSession(False); P.ShowTrainingPanel(); FindPanel();
         }
         Check(Level.NetMode==NM_Standalone,"real standalone viewport is active");
         Check(G.NumBots==0 && !G.bRequireReady && P.Health>0,"combat bots and warmup remain disabled");
         Panel.WeaponControl.SetSelectedIndex(1); Panel.ExerciseControl.SetSelectedIndex(0);
-        Panel.DurationControl.SetSelectedIndex(1);
+        Panel.DurationControl.SetSelectedIndex(1);Panel.DistanceControl.SetSelectedIndex(0);Panel.SizeControl.SetSelectedIndex(0);
         Panel.Notify(Panel.StartButton,Panel.DE_Click);
         Check(G.Running && G.SessionDuration==30 && G.WeaponIndex==1,"Start uses selected weapon and 30-second duration");
         Check(Level.Pauser=="" && !WC.bUWindowActive,"Start resumes world");
@@ -110,6 +125,23 @@ function Tick(float Delta)
         Check(UTATHUD(P.myHUD)!=None && G.HasResult,"result HUD stays available");
         FinishedShots=G.Shots; P.Fire(0);
         Check(WC.bUWindowActive && G.Shots==FinishedShots,"post-timer fire opens selector without shooting");
+        Panel.Notify(Panel.HistoryButton,Panel.DE_Click);
+        HistoryWindow=UTATHistoryWindow(WC.Root.FindChildWindow(class'UTATHistoryWindow',True));
+        if(HistoryWindow==None) {Check(False,"history window available after completed round");ConsoleCommand("exit");Stage=99;return;}
+        HistoryPanel=UTATHistoryPanel(HistoryWindow.ClientArea);
+        Age=0;Stage=6;
+    }
+    else if(Stage==6 && Age>0.4)
+    {
+        Check(HistoryPanel.Painted && HistoryPanel.Store.HistoryCount>0,"history renders saved rounds in native viewport");
+        HistoryPanel.Notify(HistoryPanel.NextButton,HistoryPanel.DE_Click);
+        HistoryPanel.Painted=False;Age=0;Stage=7;
+    }
+    else if(Stage==7 && Age>0.4)
+    {
+        Check(HistoryPanel.Painted,"history pagination renders without leaving setup");
+        HistoryPanel.Notify(HistoryPanel.BackButton,HistoryPanel.DE_Click);
+        Check(WC.bUWindowActive && Panel.DurationControl.GetSelectedIndex()==1,"closing history preserves setup after results");
         Log("DONE failures="$Failures,'UTATClientTest'); ConsoleCommand("exit"); Stage=99;
     }
 }

@@ -24,7 +24,7 @@ simulated function PostRender(Canvas C)
         {
             BoxW=FMin(540,C.ClipX-40); BoxX=(C.ClipX-BoxW)/2; BoxY=C.ClipY*0.30;
             C.DrawColor.R=30; C.DrawColor.G=35; C.DrawColor.B=45;
-            C.SetPos(BoxX,BoxY); C.DrawTile(Texture'UTAT.TrainingWall',BoxW,210,0,0,128,128);
+            C.SetPos(BoxX,BoxY); C.DrawTile(Texture'UTAT.TrainingWall',BoxW,232,0,0,128,128);
             C.DrawColor.R=255; C.DrawColor.G=213; C.DrawColor.B=74;
             C.Font=C.LargeFont; C.SetPos(BoxX+18,BoxY+14); C.DrawText("ROUND RESULTS");
             C.Font=C.MedFont; C.DrawColor.R=240; C.DrawColor.G=245; C.DrawColor.B=255;
@@ -33,7 +33,8 @@ simulated function PostRender(Canvas C)
             C.SetPos(BoxX+18,BoxY+104); C.DrawText("Eliminations: "$G.Eliminations$" | Time: "$int(G.LastElapsed)$"s");
             C.SetPos(BoxX+18,BoxY+130); C.DrawText("Unit: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex));
             if(G.BeamActive>0) {C.SetPos(BoxX+18,BoxY+148);C.DrawText("Beam contact "$int(100*G.BeamContact/G.BeamActive)$"% (time)");}
-            C.SetPos(BoxX+18,BoxY+164); C.DrawText("Press FIRE to choose your next weapon / exercise");
+            C.SetPos(BoxX+18,BoxY+170); C.DrawText(class'UTATTrainingOptions'.static.Exercise(G.ExerciseMode)$" | "$class'UTATTrainingOptions'.static.Distance(G.DistanceMode)$" | "$class'UTATTrainingOptions'.static.Size(G.SizeMode));
+            C.SetPos(BoxX+18,BoxY+190); C.DrawText("Press FIRE to choose your next weapon / exercise");
         }
         return;
     }
@@ -42,5 +43,6 @@ simulated function PostRender(Canvas C)
     C.DrawText(class'UTATGame'.static.WeaponLabel(G.WeaponIndex)$" | "$TimeText);
     C.SetPos(20,64); C.DrawText("Accuracy "$AccuracyText$" | Hits "$G.Hits$" / "$G.Shots$" | Eliminations "$G.Eliminations);
     if(G.BeamActive>0) {C.SetPos(20,110);C.DrawText("Beam contact "$int(100*G.BeamContact/G.BeamActive)$"% (time)");}
+    C.SetPos(20,132); C.DrawText(class'UTATTrainingOptions'.static.Exercise(G.ExerciseMode)$" | "$class'UTATTrainingOptions'.static.Distance(G.DistanceMode)$" | "$class'UTATTrainingOptions'.static.Size(G.SizeMode));
     C.SetPos(20,86); C.DrawText("Units: "$class'UTATGame'.static.UnitLabel(G.WeaponIndex)$" | AimFinish: score | AimRestart: repeat");
 }

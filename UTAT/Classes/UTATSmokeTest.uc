@@ -28,7 +28,7 @@ function Timer()
         Check(P!=None,"player fits inside map");
         if(P==None) { ConsoleCommand("exit"); return; }
         P.EnsureSettings();
-        P.Settings.Duration=0;
+        P.Settings.Duration=0;P.Settings.TargetDistance=0;P.Settings.TargetSize=0;
     }
     if(Step<12)
     {

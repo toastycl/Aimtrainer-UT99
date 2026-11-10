@@ -1,18 +1,22 @@
-# Validation — standalone development build 0.4.1
+# Validation — standalone development build 0.5.0
 
 | Check | Result |
 | --- | --- |
-| Active developer Python tests | 14 passing |
-| UnrealScript standalone package | 0 errors, 0 warnings |
-| Real training map rebuild | PASS, six polygons |
-| Native viewport/UWindow regression | 26 assertions passing |
-| All eleven weapons, primary / secondary | 11 + 11 native cases passing |
-| Dedicated-engine regression | 52 assertions passing |
-| Player ZIP contents | Mod, int, map and Spanish instructions only |
-| Physical mouse, visual and Windows acceptance | Pending on tester's actual client |
+| Developer Python tests | 16 passing |
+| UnrealScript and own room build | 0 errors, 0 warnings |
+| Exercise/distance/size matrix | 48 combinations; 199 native geometry/motion/history checks |
+| Aerial respawn/scoring, scaled collision and movement bounds | PASS |
+| Persistent ten-entry history, beam/partial status, no duplicate finish | PASS |
+| Native viewport/UWindow, selection travel and rendered history pages | 36 checks passing |
+| Dedicated round/weapon regression | 52 checks passing |
+| Eleven weapons × primary/secondary native client checks | 22 cases passing |
+| Player ZIP | Mod, int, map and Spanish instructions only |
+| Actual mouse, visual fit and Windows/macOS acceptance | Pending on tester's client |
 
-[All-weapon evidence](ARSENAL_SMOKE.md) · [Standalone callbacks](CLIENT_SMOKE.md) · [Dedicated checks](ENGINE_SMOKE.md).
+Evidence: [target/history matrix](TRAINING_SMOKE.md), [native UI](CLIENT_SMOKE.md), [round regression](ENGINE_SMOKE.md), [arsenal](ARSENAL_SMOKE.md).
 
-Toolchain: OldUnreal 469e Linux amd64, SDL offscreen/Mesa llvmpipe. Native tests use actual engine viewports, UWindow callbacks and weapon implementations. They do not certify physical input latency or replace manual platform testing. Opt-in arsenal fixtures use controlled target positions and a centered muzzle; ordinary play is unaffected. Projectile scoring and Pulse beam contact remain separate metrics.
+Toolchain: OldUnreal 469e Linux amd64, SDL offscreen/Mesa llvmpipe for viewport tests. Native callbacks, real weapon implementations and actual rendered history frames are exercised. Opt-in geometry fixtures advance a controlled round clock; arsenal fixtures center the muzzle and move a target near the player. They are disabled in ordinary play. These checks do not certify physical input latency, human hitboxes or exact dodge physics. Random aerial/evasive motion is a training pattern.
 
-IGPlus, ping selection and external helpers are excluded from the active package. Their earlier implementation and validation are historical under experimental/igplus. Original game assets/toolchain are external build dependencies and are not redistributed.
+Projectile/trace accuracy and Pulse beam contact remain separate. History records observed fire input, settings and completion; it does not detect DPI or recommend a best sensitivity. The exporter keeps distance, size and fire style in separate cohorts and still imports older logs. Random start/layout remains a source of trial variation.
+
+IGPlus/ping/helpers remain deferred and excluded from the active package. Original game assets/toolchain remain external and are not distributed. No live server deployment or GitHub Release was performed.

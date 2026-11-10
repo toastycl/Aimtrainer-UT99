@@ -1,6 +1,6 @@
-# Dedicated-engine regression — 0.4.1
+# Dedicated engine regression — 0.5.0
 
-Linux 469e, isolated native engine. Uses a synthetic pawn without a Player connection; physical input and visual acceptance remain separate.
+52 checks passing on OldUnreal 469e Linux amd64. Native engine/viewport callbacks are separate from physical mouse, visual and platform acceptance. Developer test fixtures are opt-in only.
 
 ```text
 PASS room marker exists
