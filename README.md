@@ -2,9 +2,9 @@
 
 A simple **standalone practice-room mod for Unreal Tournament 99**, created by **ToastyCL** for the entire UT99 community. Install the mod/map, open UT, choose a weapon and train using your normal mouse settings.
 
-**Version 1.0.0 — first public release package.** No Python, IGPlus, launcher or external helper is required to play. The earlier network/latency experiment is deferred; the current focus is the training experience inside UT.
+**[Version 1.0.0 — first public release](https://github.com/toastycl/Aimtrainer-UT99/releases/tag/v1.0.0).** No Python, IGPlus, launcher or external helper is required to play. The earlier network/latency experiment is deferred; the current focus is the training experience inside UT.
 
-[**Download the standalone mod + map**](downloads/UTAT-1.0.0.zip?raw=true) · [Guía en español](docs/QUICKSTART_ES.md) · [Validation](docs/VALIDATION.md) · [Checksums](downloads/UTAT-1.0.0-SHA256SUMS.txt) · [Release notes](docs/RELEASE_v1.0.0.md)
+[**Download the standalone mod + map**](https://github.com/toastycl/Aimtrainer-UT99/releases/download/v1.0.0/UTAT-1.0.0.zip) · [Guía en español](docs/QUICKSTART_ES.md) · [Validation](docs/VALIDATION.md) · [Checksums](downloads/UTAT-1.0.0-SHA256SUMS.txt) · [Release notes](docs/RELEASE_v1.0.0.md)
 
 ## Install and play
 

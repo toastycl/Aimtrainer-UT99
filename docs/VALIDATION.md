@@ -19,4 +19,4 @@ Toolchain: OldUnreal 469e Linux amd64, SDL offscreen/Mesa llvmpipe for viewport 
 
 Projectile/trace accuracy and Pulse beam contact remain separate. History records observed fire input, settings and completion; it does not detect DPI or recommend a best sensitivity. The exporter keeps distance, size and fire style in separate cohorts and still imports older logs. Random start/layout remains a source of trial variation.
 
-IGPlus/ping/helpers remain deferred and excluded from the active package. Original game assets/toolchain remain external and are not distributed. The v1.0.0 package is prepared for manual GitHub Release publication by the maintainer. No live server deployment was performed.
+IGPlus/ping/helpers remain deferred and excluded from the active package. Original game assets/toolchain remain external and are not distributed. Version [v1.0.0](https://github.com/toastycl/Aimtrainer-UT99/releases/tag/v1.0.0) has been published by the maintainer. The uploaded ZIP SHA256 matches the verified package: `8caacd3e4e8a1edc8d3fc343e0b87a1e1091b65f43797832dd133e9e3a6741b4`. No live server deployment was performed.
